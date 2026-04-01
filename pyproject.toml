@@ -13,8 +13,20 @@ dependencies = [
     "python-dotenv>=1.0,<2.0",
 ]
 
+[dependency-groups]
+dev = ["pytest>=9,<10", "ruff>=0.15,<1.0", "mypy>=1.19,<2.0"]
+
 [tool.setuptools]
 package-dir = { "" = "src" }
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+mypy_path = "src"
+explicit_package_bases = true
