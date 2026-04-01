@@ -22,3 +22,15 @@ def parse_recommended_month(text: str) -> int:
         raise ValueError(f"Could not find month name in: {text!r}")
 
     return MONTHS[month_name]
+
+
+def parse_recommended_month_stage(text: str) -> str | None:
+    lower_text = text.lower()
+
+    if "early" in lower_text:
+        return "early"
+
+    if "late" in lower_text:
+        return "late"
+
+    return None
