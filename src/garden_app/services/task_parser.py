@@ -70,3 +70,20 @@ def parse_task_type(value: str | None) -> str | None:
 
 def parse_notes(value: str | None) -> str | None:
     return parse_optional_text(value)
+
+
+def parse_done(value: bool | str | None) -> bool:
+    if isinstance(value, bool):
+        return value
+
+    if value is None:
+        return False  # treat missing as not done
+
+    text = value.strip().lower()
+
+    if text == "true":
+        return True
+    if text == "false" or text == "":
+        return False
+
+    raise ValueError(f"Invalid done value: {value!r}")

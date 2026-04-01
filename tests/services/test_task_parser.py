@@ -2,6 +2,7 @@ import pytest
 
 from garden_app.services.task_parser import (
     parse_area,
+    parse_done,
     parse_notes,
     parse_optional_text,
     parse_priority,
@@ -113,3 +114,33 @@ def test_parse_task_type_uses_optional_text_parser() -> None:
 
 def test_parse_notes_uses_optional_text_parser() -> None:
     assert parse_notes(" Some note ") == "Some note"
+
+
+@pytest.mark.parametrize(
+    "value,expected",
+    [
+        (True, True),
+        (False, False),
+        ("TRUE", True),
+        ("FALSE", False),
+        ("true", True),
+        ("false", False),
+        ("", False),
+        (None, False),
+    ],
+)
+def test_parse_done(value, expected: bool) -> None:
+    assert parse_done(value) == expected
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        "yes",
+        "no",
+        "1",
+    ],
+)
+def test_parse_done_invalid(value) -> None:
+    with pytest.raises(ValueError):
+        parse_done(value)
