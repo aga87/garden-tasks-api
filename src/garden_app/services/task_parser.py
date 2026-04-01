@@ -52,10 +52,21 @@ def parse_priority(value: str | None) -> str | None:
     return lower
 
 
-def parse_area(value: str | None) -> str | None:
+def parse_optional_text(value: str | None) -> str | None:
     if value is None:
         return None
 
     text = value.strip()
-
     return text or None
+
+
+def parse_area(value: str | None) -> str | None:
+    return parse_optional_text(value)
+
+
+def parse_task_type(value: str | None) -> str | None:
+    return parse_optional_text(value)
+
+
+def parse_notes(value: str | None) -> str | None:
+    return parse_optional_text(value)

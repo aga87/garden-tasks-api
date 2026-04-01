@@ -2,9 +2,12 @@ import pytest
 
 from garden_app.services.task_parser import (
     parse_area,
+    parse_notes,
+    parse_optional_text,
     parse_priority,
     parse_recommended_month,
     parse_recommended_month_stage,
+    parse_task_type,
 )
 
 
@@ -83,15 +86,30 @@ def test_parse_priority_invalid(value: str) -> None:
         parse_priority(value)
 
 
+# Full test coverage for shared helper
 @pytest.mark.parametrize(
     "value,expected",
     [
         ("Canal", "Canal"),
         (" Everywhere ", "Everywhere"),
+        ("Some note", "Some note"),
         ("", None),
         ("   ", None),
         (None, None),
     ],
 )
-def test_parse_area(value: str | None, expected: str | None) -> None:
-    assert parse_area(value) == expected
+def test_parse_optional_text(value: str | None, expected: str | None) -> None:
+    assert parse_optional_text(value) == expected
+
+
+# One simple test per wrapper
+def test_parse_area_uses_optional_text_parser() -> None:
+    assert parse_area(" Canal ") == "Canal"
+
+
+def test_parse_task_type_uses_optional_text_parser() -> None:
+    assert parse_task_type(" Maintenance ") == "Maintenance"
+
+
+def test_parse_notes_uses_optional_text_parser() -> None:
+    assert parse_notes(" Some note ") == "Some note"
