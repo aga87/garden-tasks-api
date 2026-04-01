@@ -9,6 +9,7 @@ from garden_app.services.task_parser import (
     parse_recommended_month,
     parse_recommended_month_stage,
     parse_task_type,
+    parse_title,
 )
 
 
@@ -144,3 +145,27 @@ def test_parse_done(value, expected: bool) -> None:
 def test_parse_done_invalid(value) -> None:
     with pytest.raises(ValueError):
         parse_done(value)
+
+
+@pytest.mark.parametrize(
+    "value,expected",
+    [
+        ("Remove brambles", "Remove brambles"),
+        (" Prune willows ", "Prune willows"),
+    ],
+)
+def test_parse_title(value: str, expected: str) -> None:
+    assert parse_title(value) == expected
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        "",
+        "   ",
+        None,
+    ],
+)
+def test_parse_title_invalid(value: str | None) -> None:
+    with pytest.raises(ValueError):
+        parse_title(value)

@@ -87,3 +87,14 @@ def parse_done(value: bool | str | None) -> bool:
         return False
 
     raise ValueError(f"Invalid done value: {value!r}")
+
+
+def parse_title(value: str | None) -> str:
+    if value is None:
+        raise ValueError("Task title is missing")
+
+    text = value.strip()
+    if not text:
+        raise ValueError("Task title is empty")
+
+    return text
