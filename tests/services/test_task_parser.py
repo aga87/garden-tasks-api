@@ -1,6 +1,7 @@
 import pytest
 
 from garden_app.services.task_parser import (
+    parse_priority,
     parse_recommended_month,
     parse_recommended_month_stage,
 )
@@ -51,3 +52,31 @@ def test_parse_recommended_month_invalid(value: str) -> None:
 )
 def test_parse_recommended_month_stage(value: str, expected: str | None) -> None:
     assert parse_recommended_month_stage(value) == expected
+
+
+@pytest.mark.parametrize(
+    "value,expected",
+    [
+        ("Low", "low"),
+        ("Medium", "medium"),
+        ("High", "high"),
+        ("low", "low"),
+        (" medium ", "medium"),
+        ("", None),
+        (None, None),
+    ],
+)
+def test_parse_priority(value: str | None, expected: str | None) -> None:
+    assert parse_priority(value) == expected
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        "Urgent",
+        "Very High",
+    ],
+)
+def test_parse_priority_invalid(value: str) -> None:
+    with pytest.raises(ValueError):
+        parse_priority(value)

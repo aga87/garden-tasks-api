@@ -34,3 +34,19 @@ def parse_recommended_month_stage(text: str) -> str | None:
         return "late"
 
     return None
+
+
+def parse_priority(value: str | None) -> str | None:
+    if value is None:
+        return None
+
+    text = value.strip()
+    if not text:
+        return None
+
+    lower = text.lower()
+
+    if lower not in {"low", "medium", "high"}:
+        raise ValueError(f"Invalid priority: {value!r}")
+
+    return lower
