@@ -13,4 +13,4 @@ typecheck:
 test:
 	pytest
 
-check: lint test format typecheck
+check: format lint typecheck test
