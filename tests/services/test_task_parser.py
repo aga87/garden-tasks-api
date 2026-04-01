@@ -1,6 +1,7 @@
 import pytest
 
 from garden_app.services.task_parser import (
+    parse_area,
     parse_priority,
     parse_recommended_month,
     parse_recommended_month_stage,
@@ -80,3 +81,17 @@ def test_parse_priority(value: str | None, expected: str | None) -> None:
 def test_parse_priority_invalid(value: str) -> None:
     with pytest.raises(ValueError):
         parse_priority(value)
+
+
+@pytest.mark.parametrize(
+    "value,expected",
+    [
+        ("Canal", "Canal"),
+        (" Everywhere ", "Everywhere"),
+        ("", None),
+        ("   ", None),
+        (None, None),
+    ],
+)
+def test_parse_area(value: str | None, expected: str | None) -> None:
+    assert parse_area(value) == expected

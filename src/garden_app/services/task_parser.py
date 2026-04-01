@@ -50,3 +50,12 @@ def parse_priority(value: str | None) -> str | None:
         raise ValueError(f"Invalid priority: {value!r}")
 
     return lower
+
+
+def parse_area(value: str | None) -> str | None:
+    if value is None:
+        return None
+
+    text = value.strip()
+
+    return text or None
