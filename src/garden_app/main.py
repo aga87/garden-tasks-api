@@ -1,8 +1,8 @@
 from dotenv import load_dotenv
 from fastapi import FastAPI
 
-from garden_app.integrations.google_sheets import fetch_sheet_values
 from garden_app.logging_config import setup_logging
+from garden_app.services.task_loader import load_tasks_from_sheet
 
 load_dotenv()
 setup_logging()
@@ -24,6 +24,6 @@ def health() -> dict[str, str]:
 
 
 @app.get("/tasks")
-def read_sheet() -> dict[str, list[list[str]]]:
-    rows = fetch_sheet_values()
-    return {"rows": rows}
+def get_tasks() -> dict[str, list[dict[str, object]]]:
+    tasks = load_tasks_from_sheet()
+    return {"tasks": [task.model_dump() for task in tasks]}
