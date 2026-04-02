@@ -1,4 +1,9 @@
+import logging
+
 from garden_app.domain_types import Priority, RecommendedMonthStage
+from garden_app.models.task import Task
+
+logger = logging.getLogger(__name__)
 
 MONTHS = {
     "january": 1,
@@ -96,3 +101,28 @@ def parse_title(value: str | None) -> str:
         raise ValueError("Task title is empty")
 
     return text
+
+
+def parse_task_row(row: dict[str, str | None]) -> Task | None:
+    try:
+        title = parse_title(row.get("Task"))
+
+        recommended_time = row.get("Recommended time")
+        if not recommended_time or not recommended_time.strip():
+            logger.warning("Skipping row: missing recommended time | row=%s", row)
+            return None
+
+        return Task(
+            title=title,
+            recommended_month=parse_recommended_month(recommended_time),
+            recommended_month_stage=parse_recommended_month_stage(recommended_time),
+            priority=parse_priority(row.get("Priority")),
+            area=parse_area(row.get("Area")),
+            task_type=parse_task_type(row.get("Type of task")),
+            notes=parse_notes(row.get("Notes")),
+            done=parse_done(row.get("Done")),
+        )
+
+    except ValueError as e:
+        logger.warning("Skipping row due to parsing error: %s | row=%s", e, row)
+        return None

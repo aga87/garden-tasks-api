@@ -8,6 +8,7 @@ from garden_app.services.task_parser import (
     parse_priority,
     parse_recommended_month,
     parse_recommended_month_stage,
+    parse_task_row,
     parse_task_type,
     parse_title,
 )
@@ -145,3 +146,113 @@ def test_parse_title(value: str, expected: str) -> None:
 def test_parse_title_invalid(value: str | None) -> None:
     with pytest.raises(ValueError):
         parse_title(value)
+
+
+# TASK ROW
+def test_parse_task_row_valid() -> None:
+    row = {
+        "Task": "Remove brambles",
+        "Recommended time": "01.1 Early January",
+        "Priority": "High",
+        "Area": "Canal",
+        "Type of task": "Maintenance",
+        "Notes": "Some note",
+        "Done": "TRUE",
+    }
+
+    result = parse_task_row(row)
+
+    assert result is not None
+    assert result.title == "Remove brambles"
+    assert result.recommended_month == 1
+    assert result.recommended_month_stage == "early"
+    assert result.priority == "high"
+    assert result.area == "Canal"
+    assert result.task_type == "Maintenance"
+    assert result.notes == "Some note"
+    assert result.done is True
+
+
+def test_parse_task_row_minimal_valid() -> None:
+    row = {
+        "Task": "Prune willows",
+        "Recommended time": "05. May",
+    }
+
+    result = parse_task_row(row)
+
+    assert result is not None
+    assert result.title == "Prune willows"
+    assert result.recommended_month == 5
+    assert result.recommended_month_stage is None
+    assert result.priority is None
+    assert result.area is None
+    assert result.task_type is None
+    assert result.notes is None
+    assert result.done is False
+
+
+def test_parse_task_row_missing_recommended_time_empty() -> None:
+    row = {
+        "Task": "Remove brambles",
+        "Recommended time": "",
+    }
+
+    assert parse_task_row(row) is None
+
+
+def test_parse_task_row_missing_recommended_time_none() -> None:
+    row = {
+        "Task": "Remove brambles",
+        "Recommended time": None,
+    }
+
+    assert parse_task_row(row) is None
+
+
+def test_parse_task_row_missing_title_empty() -> None:
+    row = {
+        "Task": "",
+        "Recommended time": "01. January",
+    }
+
+    assert parse_task_row(row) is None
+
+
+def test_parse_task_row_missing_title_none() -> None:
+    row = {
+        "Task": None,
+        "Recommended time": "01. January",
+    }
+
+    assert parse_task_row(row) is None
+
+
+def test_parse_task_row_invalid_month() -> None:
+    row = {
+        "Task": "Remove brambles",
+        "Recommended time": "Not a real month",
+    }
+
+    assert parse_task_row(row) is None
+
+
+def test_parse_task_row_optional_fields_invalid() -> None:
+    row = {
+        "Task": "Remove brambles",
+        "Recommended time": "01. January",
+        "Priority": "urgent",  # invalid → None
+        "Area": "",
+        "Type of task": None,
+        "Notes": "   ",
+        "Done": "FALSE",
+    }
+
+    result = parse_task_row(row)
+
+    assert result is not None
+    assert result.priority is None
+    assert result.area is None
+    assert result.task_type is None
+    assert result.notes is None
+    assert result.done is False
