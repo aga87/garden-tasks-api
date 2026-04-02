@@ -1,0 +1,29 @@
+import logging
+
+from garden_app.domain.task_visibility import (
+    filter_tasks_for_current_window,
+    get_current_month,
+    get_month_window,
+)
+from garden_app.models.task import Task
+from garden_app.services.task_loader import load_tasks_from_sheet
+
+logger = logging.getLogger(__name__)
+
+
+def get_visible_tasks() -> list[Task]:
+    tasks = load_tasks_from_sheet()
+
+    current_month = get_current_month()
+    visible_months = get_month_window(current_month)
+
+    visible_tasks = filter_tasks_for_current_window(tasks)
+
+    logger.info(
+        "Filtered %d tasks to %d tasks for months %s",
+        len(tasks),
+        len(visible_tasks),
+        sorted(visible_months),
+    )
+
+    return visible_tasks

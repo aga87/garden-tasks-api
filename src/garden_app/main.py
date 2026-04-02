@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 
 from garden_app.logging_config import setup_logging
-from garden_app.services.task_loader import load_tasks_from_sheet
+from garden_app.services.task_service import get_visible_tasks
 
 load_dotenv()
 setup_logging()
@@ -25,5 +25,5 @@ def health() -> dict[str, str]:
 
 @app.get("/tasks")
 def get_tasks() -> dict[str, list[dict[str, object]]]:
-    tasks = load_tasks_from_sheet()
+    tasks = get_visible_tasks()
     return {"tasks": [task.model_dump() for task in tasks]}
