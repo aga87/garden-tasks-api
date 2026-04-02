@@ -1,3 +1,5 @@
+from garden_app.domain_types import Priority, RecommendedMonthStage
+
 MONTHS = {
     "january": 1,
     "february": 2,
@@ -24,7 +26,7 @@ def parse_recommended_month(text: str) -> int:
     return MONTHS[month_name]
 
 
-def parse_recommended_month_stage(text: str) -> str | None:
+def parse_recommended_month_stage(text: str) -> RecommendedMonthStage | None:
     lower_text = text.lower()
 
     if "early" in lower_text:
@@ -36,7 +38,7 @@ def parse_recommended_month_stage(text: str) -> str | None:
     return None
 
 
-def parse_priority(value: str | None) -> str | None:
+def parse_priority(value: str | None) -> Priority | None:
     if value is None:
         return None
 
@@ -46,10 +48,14 @@ def parse_priority(value: str | None) -> str | None:
 
     lower = text.lower()
 
-    if lower not in {"low", "medium", "high"}:
-        raise ValueError(f"Invalid priority: {value!r}")
+    if lower == "low":
+        return "low"
+    if lower == "medium":
+        return "medium"
+    if lower == "high":
+        return "high"
 
-    return lower
+    return None
 
 
 def parse_optional_text(value: str | None) -> str | None:
@@ -72,21 +78,13 @@ def parse_notes(value: str | None) -> str | None:
     return parse_optional_text(value)
 
 
-def parse_done(value: bool | str | None) -> bool:
-    if isinstance(value, bool):
-        return value
-
+def parse_done(value: str | None) -> bool:
     if value is None:
-        return False  # treat missing as not done
+        return False
 
     text = value.strip().lower()
 
-    if text == "true":
-        return True
-    if text == "false" or text == "":
-        return False
-
-    raise ValueError(f"Invalid done value: {value!r}")
+    return text in {"true", "1", "yes"}
 
 
 def parse_title(value: str | None) -> str:

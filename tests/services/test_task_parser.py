@@ -69,23 +69,12 @@ def test_parse_recommended_month_stage(value: str, expected: str | None) -> None
         ("low", "low"),
         (" medium ", "medium"),
         ("", None),
+        ("urgent", None),
         (None, None),
     ],
 )
 def test_parse_priority(value: str | None, expected: str | None) -> None:
     assert parse_priority(value) == expected
-
-
-@pytest.mark.parametrize(
-    "value",
-    [
-        "Urgent",
-        "Very High",
-    ],
-)
-def test_parse_priority_invalid(value: str) -> None:
-    with pytest.raises(ValueError):
-        parse_priority(value)
 
 
 # Full test coverage for shared helper
@@ -118,33 +107,20 @@ def test_parse_notes_uses_optional_text_parser() -> None:
 
 
 @pytest.mark.parametrize(
-    "value,expected",
+    ("value", "expected"),
     [
-        (True, True),
-        (False, False),
         ("TRUE", True),
         ("FALSE", False),
         ("true", True),
         ("false", False),
+        ("yes", True),
+        ("1", True),
         ("", False),
         (None, False),
     ],
 )
-def test_parse_done(value, expected: bool) -> None:
+def test_parse_done(value: str | None, expected: bool) -> None:
     assert parse_done(value) == expected
-
-
-@pytest.mark.parametrize(
-    "value",
-    [
-        "yes",
-        "no",
-        "1",
-    ],
-)
-def test_parse_done_invalid(value) -> None:
-    with pytest.raises(ValueError):
-        parse_done(value)
 
 
 @pytest.mark.parametrize(
