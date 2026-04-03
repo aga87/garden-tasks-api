@@ -1,6 +1,6 @@
 import logging
 
-from garden_app.domain_types import Priority, RecommendedMonthStage
+from garden_app.domain.types import Priority, RecommendedMonthStage
 from garden_app.models.task import Task
 
 logger = logging.getLogger(__name__)
@@ -31,14 +31,19 @@ def parse_recommended_month(text: str) -> int:
     return MONTHS[month_name]
 
 
-def parse_recommended_month_stage(text: str) -> RecommendedMonthStage | None:
-    lower_text = text.lower()
+def parse_recommended_month_stage(
+    value: str | None,
+) -> RecommendedMonthStage | None:
+    if not value:
+        return None
 
-    if "early" in lower_text:
-        return "early"
+    normalized = value.strip().lower()
 
-    if "late" in lower_text:
-        return "late"
+    if "early" in normalized:
+        return RecommendedMonthStage.early
+
+    if "late" in normalized:
+        return RecommendedMonthStage.late
 
     return None
 
@@ -47,18 +52,16 @@ def parse_priority(value: str | None) -> Priority | None:
     if value is None:
         return None
 
-    text = value.strip()
-    if not text:
-        return None
+    normalized = value.strip().lower()
 
-    lower = text.lower()
+    if normalized == "high":
+        return Priority.high
 
-    if lower == "low":
-        return "low"
-    if lower == "medium":
-        return "medium"
-    if lower == "high":
-        return "high"
+    if normalized == "medium":
+        return Priority.medium
+
+    if normalized == "low":
+        return Priority.low
 
     return None
 
