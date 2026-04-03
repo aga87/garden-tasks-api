@@ -1,19 +1,12 @@
-from datetime import datetime
 from zoneinfo import ZoneInfo
 
+from garden_app.domain.time import get_current_month, get_month_window
 from garden_app.models.task import Task
 
 APP_TIMEZONE = ZoneInfo("Europe/Amsterdam")
 
-
-def get_current_month(timezone: ZoneInfo = APP_TIMEZONE) -> int:
-    return datetime.now(timezone).month
-
-
-def get_month_window(current_month: int) -> set[int]:
-    previous_month = 12 if current_month == 1 else current_month - 1
-    next_month = 1 if current_month == 12 else current_month + 1
-    return {previous_month, current_month, next_month}
+current = get_current_month()
+prev, curr, next_ = get_month_window(current)
 
 
 def filter_tasks_for_current_window(tasks: list[Task]) -> list[Task]:
