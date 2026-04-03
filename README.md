@@ -14,6 +14,8 @@ The API reads from a shared Google Sheet and exposes a structured, mobile-friend
 - Google Sheets (source of truth, no database)
 - Next.js (frontend)
 
+___
+
 ## Local Development Setup
 
 ### Environment variables
@@ -46,18 +48,83 @@ pytest
 
 Common development tasks are available via the Makefile.
 
+___
 
 ## Production Setup
 
-### Infrastructure
+### One-off Infrastructure Setup
 
-Enable Secret Manager:
+#### Enable Secret Manager and Cloud Run API:
 
 ```bash
 gcloud services enable secretmanager.googleapis.com
+gcloud services enable run.googleapis.com
 ```
 
-### Environment configuration
+#### Create service account:
+
+```shell
+gcloud iam service-accounts create SERVICE_ACCOUNT_NAME \
+  --display-name="Display name"
+```
+
+Example: 
+
+```shell
+gcloud iam service-accounts create garden-tasks-api-sa \
+  --display-name="Garden Tasks API Cloud Run Service"
+```
+
+#### Grant service account permissions to read secrets
+
+```shell
+# Command
+gcloud projects add-iam-policy-binding <PROJECT_ID> \
+  --member="serviceAccount:<SERVICE_ACCOUNT_NAME>@<PROJECT_ID>.iam.gserviceaccount.com" \
+  --role="roles/secretmanager.secretAccessor"
+ ```
+
+Example: 
+
+```shell 
+gcloud projects add-iam-policy-binding garden-tasks-api \
+  --member="serviceAccount:garden-tasks-api-sa@garden-tasks-api.iam.gserviceaccount.com" \
+  --role="roles/secretmanager.secretAccessor"
+```
+
+#### Authenticate Docker with Artifact Registry
+
+```shell
+gcloud auth configure-docker <REGION>-docker.pkg.dev
+```
+
+Example:
+
+```shell
+gcloud auth configure-docker europe-west3-docker.pkg.dev
+```
+
+#### Create the Artifact Registry repository
+
+```shell
+gcloud artifacts repositories create <REPOSITORY_NAME> \
+--project=<PROJECT_ID> \
+--repository-format=docker \
+--location=<REGION> \
+--description="Docker repository for <DESCRIPTION>"
+```
+
+Example:
+
+```shell
+gcloud artifacts repositories create garden-tasks-api-repo \
+  --project=garden-tasks-api \
+  --repository-format=docker \
+  --location=europe-west3 \
+  --description="Docker repository for Garden Tasks API"
+```
+
+#### Environment configuration
 
 In production, configuration is provided via environment variables and Google Cloud Secret Manager.
 
@@ -66,3 +133,4 @@ You can bootstrap secrets from your local `.env` using the provided script:
 ```bash
 bash scripts/bootstrap-secrets.sh GOOGLE_SHEETS_API_KEY
 ```
+
