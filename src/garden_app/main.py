@@ -1,6 +1,5 @@
 from importlib.metadata import version
 
-from dotenv import load_dotenv
 from fastapi import FastAPI
 
 from garden_app.logging_config import setup_logging
@@ -9,7 +8,6 @@ from garden_app.models.root_response import RootResponse
 from garden_app.models.task_response import TasksResponse
 from garden_app.services.task_service import get_visible_tasks
 
-load_dotenv()
 setup_logging()
 
 app = FastAPI(

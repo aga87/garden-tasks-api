@@ -1,14 +1,14 @@
-import os
-
 import requests
+
+from garden_app.config.env import ENV
 
 BASE_URL = "https://sheets.googleapis.com/v4/spreadsheets"
 
 
 def fetch_sheet_values() -> list[list[str]]:
-    sheet_id = os.environ["GARDEN_SHEET_ID"]
-    sheet_range = os.environ["GARDEN_SHEET_RANGE"]
-    api_key = os.environ["GOOGLE_SHEETS_API_KEY"]
+    sheet_id = ENV.config.sheet_id
+    sheet_range = ENV.config.sheet_range
+    api_key = ENV.secrets.google_sheets_api_key
 
     url = f"{BASE_URL}/{sheet_id}/values/{sheet_range}"
 
