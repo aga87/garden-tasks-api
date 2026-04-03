@@ -38,3 +38,24 @@ pytest
 ```
 
 Common development tasks are available via the Makefile.
+
+
+## Production Setup
+
+### Infrastructure
+
+Enable Secret Manager:
+
+```bash
+gcloud services enable secretmanager.googleapis.com
+```
+
+### Environment configuration
+
+In production, configuration is provided via environment variables and Google Cloud Secret Manager.
+
+You can bootstrap secrets from your local `.env` using the provided script:
+
+```bash
+bash scripts/bootstrap-secrets.sh GOOGLE_SHEETS_API_KEY
+```
