@@ -14,3 +14,6 @@ test:
 	pytest
 
 check: format lint typecheck test
+
+run:
+	uvicorn garden_app.main:app --reload
