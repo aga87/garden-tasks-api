@@ -31,6 +31,13 @@ Open:
 - http://127.0.0.1:8000 (service info)
 - http://127.0.0.1:8000/docs (interactive API docs)
 
+**Build and run with Docker**
+
+```shell
+docker build -t creative-garden-api .
+docker run --env-file .env -p 8080:8080 garden-tasks-api
+```
+
 ### Running tests
 
 ```shell
