@@ -1,6 +1,6 @@
 import logging
 
-from garden_app.domain.types import Priority, RecommendedMonthStage
+from garden_app.domain.types import Priority, RecommendedMonthStage, Status
 from garden_app.models.task import Task
 
 logger = logging.getLogger(__name__)
@@ -52,15 +52,18 @@ def parse_priority(value: str | None) -> Priority | None:
     if value is None:
         return None
 
-    normalized = value.strip().lower()
+    text = value.strip().lower()
 
-    if normalized == "high":
+    if not text:
+        return None
+
+    if "high" in text:
         return Priority.high
 
-    if normalized == "medium":
+    if "medium" in text:
         return Priority.medium
 
-    if normalized == "low":
+    if "low" in text:
         return Priority.low
 
     return None
@@ -86,13 +89,27 @@ def parse_notes(value: str | None) -> str | None:
     return parse_optional_text(value)
 
 
-def parse_done(value: str | None) -> bool:
+def parse_responsible(value: str | None) -> str | None:
+    return parse_optional_text(value)
+
+
+def parse_progress_notes(value: str | None) -> str | None:
+    return parse_optional_text(value)
+
+
+def parse_status(value: str | None) -> Status:
     if value is None:
-        return False
+        raise ValueError("Status is required")
 
     text = value.strip().lower()
 
-    return text in {"true", "1", "yes"}
+    if text == "won't do":
+        return Status.skip
+
+    try:
+        return Status(text)
+    except ValueError:
+        raise ValueError(f"Unknown status: {text!r}")
 
 
 def parse_title(value: str | None) -> str:
@@ -123,7 +140,9 @@ def parse_task_row(row: dict[str, str | None]) -> Task | None:
             area=parse_area(row.get("Area")),
             task_type=parse_task_type(row.get("Type of task")),
             notes=parse_notes(row.get("Notes")),
-            done=parse_done(row.get("Done")),
+            status=parse_status(row.get("Status")),
+            responsible=parse_responsible(row.get("Responsible")),
+            progress_notes=parse_progress_notes(row.get("Progress")),
         )
 
     except ValueError as e:

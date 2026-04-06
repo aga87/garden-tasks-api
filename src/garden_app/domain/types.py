@@ -10,3 +10,15 @@ class Priority(str, Enum):
 class RecommendedMonthStage(str, Enum):
     early = "early"
     late = "late"
+
+
+class Status(str, Enum):
+    todo = "todo"
+    doing = "doing"
+    done = "done"
+    skip = "skip"
+
+
+class Location(str, Enum):
+    garden = "garden"
+    home = "home"
