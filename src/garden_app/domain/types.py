@@ -17,3 +17,8 @@ class Status(str, Enum):
     doing = "doing"
     done = "done"
     skip = "skip"
+
+
+class Location(str, Enum):
+    garden = "garden"
+    home = "home"
