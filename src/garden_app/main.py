@@ -1,7 +1,8 @@
 from importlib.metadata import version
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 
+from garden_app.domain.types import Location
 from garden_app.logging_config import setup_logging
 from garden_app.models.health_response import HealthResponse
 from garden_app.models.root_response import RootResponse
@@ -36,6 +37,8 @@ def health() -> HealthResponse:
 
 
 @app.get("/tasks", response_model=TasksResponse, tags=["Tasks"])
-def get_tasks() -> TasksResponse:
-    tasks = get_visible_tasks()
+def get_tasks(
+    location: Location = Query(default=None),
+) -> TasksResponse:
+    tasks = get_visible_tasks(location)
     return TasksResponse(tasks=tasks)
