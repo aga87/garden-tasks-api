@@ -1,23 +1,8 @@
-from garden_app.domain.time import (
-    get_current_month,
-    get_next_month,
-    get_previous_month,
-)
 from garden_app.domain.types import Status
 from garden_app.models.task import Task
 
 
 def sort_tasks(tasks: list[Task]) -> list[Task]:
-    current_month = get_current_month()
-    previous_month = get_previous_month(current_month)
-    next_month = get_next_month(current_month)
-
-    month_order = {
-        previous_month: 0,
-        current_month: 1,
-        next_month: 2,
-    }
-
     status_order = {
         Status.doing: 0,
         Status.todo: 1,
@@ -40,7 +25,7 @@ def sort_tasks(tasks: list[Task]) -> list[Task]:
     return sorted(
         tasks,
         key=lambda t: (
-            month_order.get(t.recommended_month, 99),
+            t.recommended_month,  # natural chronological order
             status_order.get(t.status, 99),
             stage_order.get(t.recommended_month_stage, 99),
             priority_order.get(t.priority, 99) if t.priority is not None else 99,
