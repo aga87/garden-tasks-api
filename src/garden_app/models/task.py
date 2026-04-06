@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 
-from garden_app.domain.types import Priority, RecommendedMonthStage
+from garden_app.domain.types import Priority, RecommendedMonthStage, Status
 
 
 class Task(BaseModel):
@@ -19,4 +19,4 @@ class Task(BaseModel):
     area: str | None = None
     task_type: str | None = None
     notes: str | None = None
-    done: bool
+    status: Status

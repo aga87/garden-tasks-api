@@ -1,13 +1,14 @@
 import pytest
 
+from garden_app.domain.types import Status
 from garden_app.services.task_parser import (
     parse_area,
-    parse_done,
     parse_notes,
     parse_optional_text,
     parse_priority,
     parse_recommended_month,
     parse_recommended_month_stage,
+    parse_status,
     parse_task_row,
     parse_task_type,
     parse_title,
@@ -110,18 +111,20 @@ def test_parse_notes_uses_optional_text_parser() -> None:
 @pytest.mark.parametrize(
     ("value", "expected"),
     [
-        ("TRUE", True),
-        ("FALSE", False),
-        ("true", True),
-        ("false", False),
-        ("yes", True),
-        ("1", True),
-        ("", False),
-        (None, False),
+        ("todo", Status.todo),
+        ("doing", Status.doing),
+        ("done", Status.done),
+        ("won't do", Status.skip),
     ],
 )
-def test_parse_done(value: str | None, expected: bool) -> None:
-    assert parse_done(value) == expected
+def test_parse_status(value: str, expected: Status) -> None:
+    assert parse_status(value) == expected
+
+
+@pytest.mark.parametrize("value", ["", None, "invalid", "false"])
+def test_parse_status_raises_for_unknown_value(value: str) -> None:
+    with pytest.raises(ValueError):
+        parse_status(value)
 
 
 @pytest.mark.parametrize(
@@ -157,7 +160,7 @@ def test_parse_task_row_valid() -> None:
         "Area": "Canal",
         "Type of task": "Maintenance",
         "Notes": "Some note",
-        "Done": "TRUE",
+        "Status": "todo",
     }
 
     result = parse_task_row(row)
@@ -170,13 +173,14 @@ def test_parse_task_row_valid() -> None:
     assert result.area == "Canal"
     assert result.task_type == "Maintenance"
     assert result.notes == "Some note"
-    assert result.done is True
+    assert result.status == Status.todo
 
 
 def test_parse_task_row_minimal_valid() -> None:
     row = {
         "Task": "Prune willows",
         "Recommended time": "05. May",
+        "Status": "todo",
     }
 
     result = parse_task_row(row)
@@ -189,7 +193,7 @@ def test_parse_task_row_minimal_valid() -> None:
     assert result.area is None
     assert result.task_type is None
     assert result.notes is None
-    assert result.done is False
+    assert result.status == Status.todo
 
 
 def test_parse_task_row_missing_recommended_time_empty() -> None:
@@ -241,11 +245,11 @@ def test_parse_task_row_optional_fields_invalid() -> None:
     row = {
         "Task": "Remove brambles",
         "Recommended time": "01. January",
+        "Status": "done",
         "Priority": "urgent",  # invalid → None
         "Area": "",
         "Type of task": None,
         "Notes": "   ",
-        "Done": "FALSE",
     }
 
     result = parse_task_row(row)
@@ -255,4 +259,3 @@ def test_parse_task_row_optional_fields_invalid() -> None:
     assert result.area is None
     assert result.task_type is None
     assert result.notes is None
-    assert result.done is False

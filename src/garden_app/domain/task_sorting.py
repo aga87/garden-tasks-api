@@ -3,6 +3,7 @@ from garden_app.domain.time import (
     get_next_month,
     get_previous_month,
 )
+from garden_app.domain.types import Status
 from garden_app.models.task import Task
 
 
@@ -17,9 +18,11 @@ def sort_tasks(tasks: list[Task]) -> list[Task]:
         next_month: 2,
     }
 
-    done_order = {
-        False: 0,
-        True: 1,
+    status_order = {
+        Status.doing: 0,
+        Status.todo: 1,
+        Status.done: 2,
+        Status.skip: 3,
     }
 
     stage_order = {
@@ -38,7 +41,7 @@ def sort_tasks(tasks: list[Task]) -> list[Task]:
         tasks,
         key=lambda t: (
             month_order.get(t.recommended_month, 99),
-            done_order.get(t.done, 99),
+            status_order.get(t.status, 99),
             stage_order.get(t.recommended_month_stage, 99),
             priority_order.get(t.priority, 99) if t.priority is not None else 99,
         ),
