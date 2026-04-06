@@ -89,6 +89,14 @@ def parse_notes(value: str | None) -> str | None:
     return parse_optional_text(value)
 
 
+def parse_responsible(value: str | None) -> str | None:
+    return parse_optional_text(value)
+
+
+def parse_progress_notes(value: str | None) -> str | None:
+    return parse_optional_text(value)
+
+
 def parse_status(value: str | None) -> Status:
     if value is None:
         raise ValueError("Status is required")
@@ -133,6 +141,8 @@ def parse_task_row(row: dict[str, str | None]) -> Task | None:
             task_type=parse_task_type(row.get("Type of task")),
             notes=parse_notes(row.get("Notes")),
             status=parse_status(row.get("Status")),
+            responsible=parse_responsible(row.get("Responsible")),
+            progress_notes=parse_progress_notes(row.get("Progress")),
         )
 
     except ValueError as e:

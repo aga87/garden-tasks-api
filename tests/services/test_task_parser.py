@@ -6,8 +6,10 @@ from garden_app.services.task_parser import (
     parse_notes,
     parse_optional_text,
     parse_priority,
+    parse_progress_notes,
     parse_recommended_month,
     parse_recommended_month_stage,
+    parse_responsible,
     parse_status,
     parse_task_row,
     parse_task_type,
@@ -109,6 +111,14 @@ def test_parse_notes_uses_optional_text_parser() -> None:
     assert parse_notes(" Some note ") == "Some note"
 
 
+def test_parse_responsible_uses_optional_text_parser() -> None:
+    assert parse_responsible(" Alice ") == "Alice"
+
+
+def test_parse_progress_notes_uses_optional_text_parser() -> None:
+    assert parse_progress_notes(" Some progress note ") == "Some progress note"
+
+
 @pytest.mark.parametrize(
     ("value", "expected"),
     [
@@ -162,6 +172,8 @@ def test_parse_task_row_valid() -> None:
         "Type of task": "Maintenance",
         "Notes": "Some note",
         "Status": "todo",
+        "Responsible": "Olav",
+        "Progress": "Some progress note",
     }
 
     result = parse_task_row(row)
@@ -194,6 +206,8 @@ def test_parse_task_row_minimal_valid() -> None:
     assert result.area is None
     assert result.task_type is None
     assert result.notes is None
+    assert result.responsible is None
+    assert result.progress_notes is None
     assert result.status == Status.todo
 
 

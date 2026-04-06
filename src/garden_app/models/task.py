@@ -12,6 +12,7 @@ class Task(BaseModel):
         description="Month number (1=January, 12=December)",
     )
     recommended_month_stage: RecommendedMonthStage | None = None
+    status: Status
     priority: Priority | None = Field(
         default=None,
         description="Priority of the task (optional)",
@@ -19,4 +20,5 @@ class Task(BaseModel):
     area: str | None = None
     task_type: str | None = None
     notes: str | None = None
-    status: Status
+    responsible: str | None = None
+    progress_notes: str | None = None
