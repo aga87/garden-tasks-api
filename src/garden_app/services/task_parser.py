@@ -52,15 +52,18 @@ def parse_priority(value: str | None) -> Priority | None:
     if value is None:
         return None
 
-    normalized = value.strip().lower()
+    text = value.strip().lower()
 
-    if normalized == "high":
+    if not text:
+        return None
+
+    if "high" in text:
         return Priority.high
 
-    if normalized == "medium":
+    if "medium" in text:
         return Priority.medium
 
-    if normalized == "low":
+    if "low" in text:
         return Priority.low
 
     return None

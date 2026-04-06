@@ -70,6 +70,7 @@ def test_parse_recommended_month_stage(value: str, expected: str | None) -> None
         ("High", "high"),
         ("low", "low"),
         (" medium ", "medium"),
+        ("1| High", "high"),
         ("", None),
         ("urgent", None),
         (None, None),
