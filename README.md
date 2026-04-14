@@ -131,7 +131,7 @@ In production, configuration is provided via environment variables and Google Cl
 You can bootstrap secrets from your local `.env` using the provided script:
 
 ```bash
-bash scripts/bootstrap-secrets.sh GOOGLE_SHEETS_API_KEY
+bash scripts/bootstrap-secrets.sh GOOGLE_SERVICE_ACCOUNT_JSON
 ```
 
 ### Build & Deploy
@@ -198,7 +198,7 @@ gcloud run deploy garden-tasks-api \
   --max-instances=1 \
   --allow-unauthenticated \
    --set-env-vars "GARDEN_SHEET_ID=1mL8fGL-NH3Ee3A7HnteAQ6JOl1xE7Mk5lCUFceVCQJg,GARDEN_SHEET_RANGE=Yearly tasks" \
-  --update-secrets "GOOGLE_SHEETS_API_KEY=GOOGLE_SHEETS_API_KEY:latest"
+  --update-secrets "GOOGLE_SERVICE_ACCOUNT_JSON=GOOGLE_SERVICE_ACCOUNT_JSON:latest"
 ```
 
 **Subsequent deployments**
