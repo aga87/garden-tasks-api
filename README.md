@@ -179,7 +179,7 @@ export SERVICE_ACCOUNT_EMAIL="${SERVICE_ACCOUNT_ID}@${PROJECT_ID}.iam.gserviceac
 echo "$SERVICE_ACCOUNT_EMAIL"
 ```
 
-This email is what you will save in GitHub as `GCP_SERVICE_ACCOUNT`. 
+This email is what you will save in GitHub as `GCP_SERVICE_ACCOUNT`. 
 
 #### **4. Grant that service account the roles it needs**
 
@@ -208,7 +208,7 @@ gcloud iam workload-identity-pools create "$POOL_ID" \
   --display-name="GitHub Actions Pool"
 ```
 
-This pool is the container for identities coming from GitHub Actions. 
+This pool is the container for identities coming from GitHub Actions. 
 
 
 #### **6. Create the GitHub OIDC provider inside that pool**
@@ -229,7 +229,7 @@ gcloud iam workload-identity-pools providers create-oidc "$PROVIDER_ID" \
 
 #### **7. Allow identities from that repo to impersonate the service account**
 
-This grants principals from that Workload Identity Pool, limited to your repository, the ability to act as the service account. For the service-account-based setup, `roles/iam.workloadIdentityUser` is required. 
+This grants principals from that Workload Identity Pool, limited to your repository, the ability to act as the service account. For the service-account-based setup, `roles/iam.workloadIdentityUser` is required. 
 
 ```shell
 gcloud iam service-accounts add-iam-policy-binding "$SERVICE_ACCOUNT_EMAIL" \
@@ -260,7 +260,7 @@ That exact string is your:
 GCP_WORKLOAD_IDENTITY_PROVIDER
 ```
 
-This is the value your GitHub workflow uses. 
+This is the value your GitHub workflow uses. 
 
   
 #### **9. Add the two GitHub secrets**
@@ -273,18 +273,88 @@ Create:
 - `GCP_WORKLOAD_IDENTITY_PROVIDER` = the full provider resource name from step 8
 - `GCP_SERVICE_ACCOUNT` = the service account email from step 3
 
-Those are the exact two values used by the auth action. 
+Those are the exact two values used by the auth action. 
+
+___
 
 
+## Deployment
 
-### Deployment
+### First deployment (manual)
+
+#### 1. Build the image locally - M1/M2 Mac
+
+```shell
+docker buildx build --platform linux/amd64 -t <LOCAL_IMAGE_NAME> <BUILD_CONTEXT>
+```
+
+Example
+
+```shell
+docker buildx build --platform linux/amd64 -t garden-tasks-api .
+```
+
+#### 2. Tag the Image for Artifact Registry
+
+```shell
+docker tag <LOCAL_IMAGE_NAME> <REGION>-docker.pkg.dev/<PROJECT_ID>/<REPOSITORY_NAME>/<REMOTE_IMAGE_NAME>
+```
+Example:
+
+```shell
+docker tag garden-tasks-api europe-west3-docker.pkg.dev/garden-tasks-api/garden-tasks-api-repo/garden-tasks-api
+```
+
+#### 3. Push to Artifact Registry
+
+```shell
+docker push <REGION>-docker.pkg.dev/<PROJECT_ID>/<REPOSITORY_NAME>/pdf-processing-service
+```
+
+Example
+
+```shell
+docker push europe-west3-docker.pkg.dev/garden-tasks-api/garden-tasks-api-repo/garden-tasks-api
+```
+
+#### 4. Deploy to Cloud Run
+
+**First deployment**
+
+```shell
+gcloud run deploy garden-tasks-api \
+  --image europe-west3-docker.pkg.dev/YOUR_PROJECT_ID/garden-tasks-api-repo/garden-tasks-api \
+  --region europe-west3 \
+  --service-account=garden-tasks-api-sa@YOUR_PROJECT_ID.iam.gserviceaccount.com \
+  --concurrency=1 \
+  --max-instances=1 \
+  --allow-unauthenticated \
+  --set-env-vars "KEY=VALUE" \
+  --update-secrets "SECRET_ENV_VAR=SECRET_NAME:latest"
+```
+
+Example
+
+```shell
+gcloud run deploy garden-tasks-api \
+  --image europe-west3-docker.pkg.dev/garden-tasks-api/garden-tasks-api-repo/garden-tasks-api \
+  --region europe-west3 \
+  --service-account=garden-tasks-api-sa@garden-tasks-api.iam.gserviceaccount.com \
+  --concurrency=1 \
+  --max-instances=1 \
+  --allow-unauthenticated \
+   --set-env-vars "GARDEN_SHEET_ID=1mL8fGL-NH3Ee3A7HnteAQ6JOl1xE7Mk5lCUFceVCQJg,GARDEN_SHEET_RANGE=Yearly tasks" \
+  --update-secrets "GOOGLE_SERVICE_ACCOUNT_JSON=GOOGLE_SERVICE_ACCOUNT_JSON:latest"
+```
+
+### Subsequent deployments
 
 This service is deployed to Cloud Run via GitHub Actions on pushes to main.
 
-The workflow:
-	1.	Authenticates to Google Cloud using GitHub OIDC
-	2.	Builds the Docker image for linux/amd64
-	3.	Pushes the image to Artifact Registry
-	4.	Deploys the image to Cloud Run
+The workflow: 
+1. Authenticates to Google Cloud using GitHub OIDC 
+2. Builds the Docker image for linux/amd64 
+3. Pushes the image to Artifact Registry 
+4. Deploys the image to Cloud Run
 
 See: `.github/workflows/deploy.yml`
