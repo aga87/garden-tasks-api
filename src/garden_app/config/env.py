@@ -14,7 +14,7 @@ class GardenSheetConfig:
 
 @dataclass(frozen=True)
 class Secrets:
-    google_sheets_api_key: str
+    google_service_account_json: str
 
 
 @dataclass(frozen=True)
@@ -36,6 +36,6 @@ ENV = Env(
         sheet_range=require_env("GARDEN_SHEET_RANGE"),
     ),
     secrets=Secrets(
-        google_sheets_api_key=require_env("GOOGLE_SHEETS_API_KEY"),
+        google_service_account_json=require_env("GOOGLE_SERVICE_ACCOUNT_JSON"),
     ),
 )
