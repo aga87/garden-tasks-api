@@ -35,13 +35,6 @@ jobs:
 
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v2
-
-      # (Optional) Verify that GitHub Actions can authenticate to GCP and access the target project.
-      - name: Verify project
-        run: |
-          gcloud config set project ${{ env.PROJECT_ID }}
-          gcloud projects describe ${{ env.PROJECT_ID }}
-
       - name: Configure Docker for GCP-hosted Artifact Registry
         run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
 
