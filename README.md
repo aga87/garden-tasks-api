@@ -52,7 +52,7 @@ ___
 
 ## Production setup (one-off)
 
-### I. GCP Infrastructure Setup
+### Ia. GCP Infrastructure Setup - Cloud Run
 
 #### Enable Secret Manager and Cloud Run API:
 
@@ -61,7 +61,7 @@ gcloud services enable secretmanager.googleapis.com
 gcloud services enable run.googleapis.com
 ```
 
-#### Create service account:
+#### Create Cloud Run runtime service account
 
 ```shell
 gcloud iam service-accounts create SERVICE_ACCOUNT_NAME \
@@ -124,6 +124,34 @@ gcloud artifacts repositories create garden-tasks-api-repo \
   --description="Docker repository for Garden Tasks API"
 ```
 
+### Ib. GCP Infrastructure Setup - Google OAuth2 Service Account Authentication
+
+1. Create service account
+
+```shell
+gcloud iam service-accounts create garden-sheet-reader \
+  --display-name="Garden Sheets Reader"
+```
+
+Get the email:
+
+```shell
+gcloud iam service-accounts list --filter="email:garden-sheet-reader"
+```
+
+
+2. Create JSON key
+
+```shell
+gcloud iam service-accounts keys create ./service-account-key.json \
+  --iam-account=garden-sheet-reader@garden-tasks-api.iam.gserviceaccount.com 
+```
+
+3. Save the key to Secret Manager
+
+4. Share the spreadsheet with this service account
+
+
 ### II. Environment configuration
 
 In production, configuration is provided via environment variables and Google Cloud Secret Manager.
@@ -131,7 +159,7 @@ In production, configuration is provided via environment variables and Google Cl
 You can bootstrap secrets from your local `.env` using the provided script:
 
 ```bash
-bash scripts/bootstrap-secrets.sh GOOGLE_SHEETS_API_KEY
+bash scripts/bootstrap-secrets.sh GOOGLE_SERVICE_ACCOUNT_JSON
 ```
 
 ### III. GitHub Actions authentication with Google Cloud
