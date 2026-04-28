@@ -2,11 +2,12 @@
 
 # Garden Tasks API
 
-Backend API for a mobile-first interface to manage and view community garden tasks.
-
-This is a small volunteer project for Creative Garden Wageningen, built to solve a real coordination problem around managing seasonal tasks.
- 
-The API reads from a shared Google Sheet and exposes a structured, mobile-friendly task view. The design intentionally keeps the system simple: all processing (parsing, filtering, sorting) happens in memory, which is sufficient for the current scale and avoids unnecessary infrastructure.
+- FastAPI backend for a mobile-first community garden task management application
+-  Deployed and used in production to support real-world coordination of seasonal tasks
+- Integrates with Google Sheets as the source of truth, avoiding the need for a dedicated database
+- Applies in-memory transformations (parsing, filtering, sorting) to prepare task data for API responses
+- Provides a structured API layer consumed by a Next.js frontend
+- Designed with a focus on simplicity, low operational overhead, and fast iteration, avoiding premature optimisation
 
 ## Tech Stack
 
