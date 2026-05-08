@@ -3,19 +3,69 @@
 # Garden Tasks API
 
 - FastAPI backend for a mobile-first community garden task management application
--  Deployed and used in production to support real-world coordination of seasonal tasks
+- Deployed and used in production to support real-world coordination of seasonal tasks
 - Integrates with Google Sheets as the source of truth, avoiding the need for a dedicated database
 - Applies in-memory transformations (parsing, filtering, sorting) to prepare task data for API responses
 - Provides a structured API layer consumed by a Next.js frontend
 - Designed with a focus on simplicity, low operational overhead, and fast iteration, avoiding premature optimisation
 
+
 ## Tech Stack
 
-- FastAPI (Python backend)
-- Google Sheets (source of truth, no database)
-- Next.js (frontend)
+- Python
+- FastAPI
+- Google Sheets API
+- Terraform
+- Google Cloud Run
+- GitHub Actions
 
-___
+## Environments
+
+The project currently uses a single production environment to keep infrastructure simple and cost-effective. Changes are validated locally and through CI before deployment. A separate staging environment would be the next step if the project gains more users, higher risk, or more frequent releases.
+
+## Infrastructure (Terraform)
+
+Infrastructure is provisioned using Terraform.
+
+### Prerequisites
+
+1. Install [Terraform](https://developer.hashicorp.com/terraform/install)
+2. Install TFLint
+
+```bash
+# macOS
+brew install tflint
+```
+
+3. Install TFSec
+
+```bash
+# macOS
+brew install tfsec
+```
+
+### Configuration
+
+Create environment variable files for each Terraform environment:
+
+```bash
+# cp infra/staging.tfvars.example infra/staging.tfvars
+cp infra/prod.tfvars.example infra/prod.tfvars
+```
+
+### Workflow
+
+Terraform workflow commands are defined in `infra/Makefile`, including formatting, validation, linting, planning, and applying changes.
+
+```bash
+cd infra
+
+terraform init # one-off
+
+make plan-prod
+make apply-prod
+make destroy-prod
+```
 
 ## Local Development Setup
 
