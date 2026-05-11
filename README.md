@@ -106,45 +106,46 @@ Example:
 gcloud auth configure-docker europe-west3-docker.pkg.dev
 ```
 
-### Ib. GCP Infrastructure Setup - Google OAuth2 Service Account Authentication
+### 3. Google Sheets Authentication
 
-1. Create service account
+The application uses Google Application Default Credentials (ADC) for Google Sheets access.
 
-```shell
-gcloud iam service-accounts create garden-sheet-reader \
-  --display-name="Garden Sheets Reader"
-```
-
-Get the email:
+In production, ADC resolves to the Cloud Run runtime service account provisioned by Terraform. Share the spreadsheet with the service account email from the Terraform output:
 
 ```shell
-gcloud iam service-accounts list --filter="email:garden-sheet-reader"
+terraform output cloud_run_runtime_service_account_email
 ```
 
+Grant Viewer access unless the API needs to write to the sheet.
 
-2. Create JSON key
+For local development, authenticate with ADC using service account impersonation:
+
+First grant your Google user permission to impersonate the runtime service account:
 
 ```shell
-gcloud iam service-accounts keys create ./service-account-key.json \
-  --iam-account=garden-sheet-reader@garden-tasks-api.iam.gserviceaccount.com 
+gcloud iam service-accounts add-iam-policy-binding \
+  "$(terraform output -raw cloud_run_runtime_service_account_email)" \
+  --member="user:YOUR_EMAIL@gmail.com" \
+  --role="roles/iam.serviceAccountTokenCreator" \
+  --project="$(terraform output -raw project_id)"
 ```
 
-3. Save the key to Secret Manager
+Then authenticate local ADC:
 
-4. Share the spreadsheet with this service account
-
-
-### II. Environment configuration
-
-In production, configuration is provided via environment variables and Google Cloud Secret Manager.
-
-You can bootstrap secrets from your local `.env` using the provided script:
-
-```bash
-bash scripts/bootstrap-secrets.sh GOOGLE_SERVICE_ACCOUNT_JSON
+```shell
+gcloud auth application-default login \
+  --impersonate-service-account="$(terraform output -raw cloud_run_runtime_service_account_email)"
 ```
 
+This lets local development use the same service account as Cloud Run. Your Google user must be allowed to impersonate the service account.
 
+
+### 4. Environment configuration
+
+In production, configuration is provided via environment variables:
+
+- `GARDEN_SHEET_ID`
+- `GARDEN_SHEET_RANGE`
 
 
 ___
@@ -201,8 +202,7 @@ gcloud run deploy garden-tasks-api \
   --concurrency=1 \
   --max-instances=1 \
   --allow-unauthenticated \
-  --set-env-vars "KEY=VALUE" \
-  --update-secrets "SECRET_ENV_VAR=SECRET_NAME:latest"
+  --set-env-vars "KEY=VALUE"
 ```
 
 Example
@@ -215,8 +215,7 @@ gcloud run deploy garden-tasks-api \
   --concurrency=1 \
   --max-instances=1 \
   --allow-unauthenticated \
-   --set-env-vars "GARDEN_SHEET_ID=1mL8fGL-NH3Ee3A7HnteAQ6JOl1xE7Mk5lCUFceVCQJg,GARDEN_SHEET_RANGE=Yearly tasks" \
-  --update-secrets "GOOGLE_SERVICE_ACCOUNT_JSON=GOOGLE_SERVICE_ACCOUNT_JSON:latest"
+   --set-env-vars "GARDEN_SHEET_ID=1mL8fGL-NH3Ee3A7HnteAQ6JOl1xE7Mk5lCUFceVCQJg,GARDEN_SHEET_RANGE=Yearly tasks"
 ```
 
 ### Subsequent deployments

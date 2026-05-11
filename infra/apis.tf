@@ -4,7 +4,7 @@ resource "google_project_service" "project_services" {
     "iam.googleapis.com",
     "iamcredentials.googleapis.com",
     "run.googleapis.com",
-    "secretmanager.googleapis.com",
+    "sheets.googleapis.com",
     "sts.googleapis.com",
   ])
 
