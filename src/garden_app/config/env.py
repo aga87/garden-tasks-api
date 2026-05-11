@@ -13,14 +13,8 @@ class GardenSheetConfig:
 
 
 @dataclass(frozen=True)
-class Secrets:
-    google_service_account_json: str
-
-
-@dataclass(frozen=True)
 class Env:
     config: GardenSheetConfig
-    secrets: Secrets
 
 
 def require_env(name: str) -> str:
@@ -34,8 +28,5 @@ ENV = Env(
     config=GardenSheetConfig(
         sheet_id=require_env("GARDEN_SHEET_ID"),
         sheet_range=require_env("GARDEN_SHEET_RANGE"),
-    ),
-    secrets=Secrets(
-        google_service_account_json=require_env("GOOGLE_SERVICE_ACCOUNT_JSON"),
-    ),
+    )
 )

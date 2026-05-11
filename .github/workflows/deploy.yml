@@ -10,11 +10,11 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  PROJECT_ID: garden-tasks-api
+  PROJECT_ID: garden-tasks-api-prod
   REGION: europe-west3
   REPOSITORY: garden-tasks-api-repo
   SERVICE: garden-tasks-api
-  IMAGE_URI: europe-west3-docker.pkg.dev/garden-tasks-api/garden-tasks-api-repo/garden-tasks-api
+  IMAGE_URI: europe-west3-docker.pkg.dev/garden-tasks-api-prod/garden-tasks-api-repo/garden-tasks-api
 
 jobs:
   deploy:
@@ -60,5 +60,4 @@ jobs:
           env_vars: |
             GARDEN_SHEET_ID=1mL8fGL-NH3Ee3A7HnteAQ6JOl1xE7Mk5lCUFceVCQJg
             GARDEN_SHEET_RANGE=Yearly tasks
-          secrets: |
-            GOOGLE_SHEETS_API_KEY=GOOGLE_SHEETS_API_KEY:latest
+          flags: --service-account=garden-tasks-api-sa@${{ env.PROJECT_ID }}.iam.gserviceaccount.com

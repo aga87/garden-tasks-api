@@ -3,19 +3,163 @@
 # Garden Tasks API
 
 - FastAPI backend for a mobile-first community garden task management application
--  Deployed and used in production to support real-world coordination of seasonal tasks
+- Deployed and used in production to support real-world coordination of seasonal tasks
 - Integrates with Google Sheets as the source of truth, avoiding the need for a dedicated database
 - Applies in-memory transformations (parsing, filtering, sorting) to prepare task data for API responses
 - Provides a structured API layer consumed by a Next.js frontend
 - Designed with a focus on simplicity, low operational overhead, and fast iteration, avoiding premature optimisation
 
+
 ## Tech Stack
 
-- FastAPI (Python backend)
-- Google Sheets (source of truth, no database)
-- Next.js (frontend)
+- Python
+- FastAPI
+- Google Sheets API
+- Terraform
+- Google Cloud Run
+- GitHub Actions
 
-___
+## Environments
+
+The project currently uses a single production environment to keep infrastructure simple and cost-effective. Changes are validated locally and through CI before deployment. A separate staging environment would be the next step if the project gains more users, higher risk, or more frequent releases.
+
+## Infrastructure (Terraform)
+
+Infrastructure is provisioned using Terraform.
+
+### Prerequisites
+
+1. Install [Terraform](https://developer.hashicorp.com/terraform/install)
+2. Install TFLint
+
+```bash
+# macOS
+brew install tflint
+```
+
+3. Install TFSec
+
+```bash
+# macOS
+brew install tfsec
+```
+
+### Configuration
+
+Create environment variable files for each Terraform environment:
+
+```bash
+# cp infra/staging.tfvars.example infra/staging.tfvars
+cp infra/prod.tfvars.example infra/prod.tfvars
+```
+
+### Workflow
+
+Terraform workflow commands are defined in `infra/Makefile`, including formatting, validation, linting, planning, and applying changes.
+
+```bash
+cd infra
+
+terraform init # one-off
+
+make plan-prod
+make apply-prod
+make destroy-prod
+```
+
+
+## One-off Infrastructure Setup (GCP)
+
+### 1. GitHub Actions Authentication (OIDC) with Google Cloud
+
+Deployments are handled automatically via GitHub Actions.
+
+GitHub Actions authenticates to GCP using Workload Identity Federation (OIDC) instead of long-lived JSON service account keys.
+
+Terraform provisions:
+
+- a dedicated GitHub Actions deployer service account
+- a Workload Identity Pool
+- a GitHub OIDC provider
+- IAM bindings allowing the repository to impersonate the deployer service account
+
+After applying Terraform, add the two GitHub secrets from Terraform outputs.
+
+In GitHub, go to:
+**Repository → Settings → Secrets and variables → Actions**
+
+Create:
+
+- `GCP_WORKLOAD_IDENTITY_PROVIDER` = `github_workload_identity_provider`
+- `GCP_SERVICE_ACCOUNT` = `github_deployer_service_account_email`
+
+
+### 2. Authenticate Docker with Artifact Registry
+
+```shell
+gcloud auth configure-docker <REGION>-docker.pkg.dev
+```
+
+Example:
+
+```shell
+gcloud auth configure-docker europe-west3-docker.pkg.dev
+```
+
+### 3. Google Sheets Authentication
+
+The application uses Google Application Default Credentials (ADC) for Google Sheets access.
+
+In production, ADC resolves to the Cloud Run runtime service account provisioned by Terraform. Share the spreadsheet with the service account email from the Terraform output:
+
+```shell
+terraform output cloud_run_runtime_service_account_email
+```
+
+Grant Viewer access unless the API needs to write to the sheet.
+
+For local development, authenticate with ADC using service account impersonation:
+
+First grant your Google user permission to impersonate the runtime service account:
+
+```shell
+gcloud iam service-accounts add-iam-policy-binding \
+  "$(terraform output -raw cloud_run_runtime_service_account_email)" \
+  --member="user:YOUR_EMAIL@gmail.com" \
+  --role="roles/iam.serviceAccountTokenCreator" \
+  --project="$(terraform output -raw project_id)"
+```
+
+Then authenticate local ADC:
+
+```shell
+gcloud auth application-default login \
+  --impersonate-service-account="$(terraform output -raw cloud_run_runtime_service_account_email)"
+```
+
+This lets local development use the same service account as Cloud Run. Your Google user must be allowed to impersonate the service account.
+
+
+### 4. Environment configuration
+
+In production, configuration is provided via environment variables:
+
+- `GARDEN_SHEET_ID`
+- `GARDEN_SHEET_RANGE`
+
+
+## Deployment
+
+This service is deployed to Cloud Run via GitHub Actions on pushes to `main`.
+
+The workflow: 
+1. Authenticates to Google Cloud using GitHub OIDC 
+2. Builds the Docker image for linux/amd64 
+3. Pushes the image to Artifact Registry 
+4. Deploys the image to Cloud Run
+
+See: `.github/workflows/deploy.yml`
+
 
 ## Local Development Setup
 
@@ -48,342 +192,3 @@ pytest
 ```
 
 Common development tasks are available via the Makefile.
-
-___
-
-## Production setup (one-off)
-
-### Ia. GCP Infrastructure Setup - Cloud Run
-
-#### Enable Secret Manager and Cloud Run API:
-
-```bash
-gcloud services enable secretmanager.googleapis.com
-gcloud services enable run.googleapis.com
-```
-
-#### Create Cloud Run runtime service account
-
-```shell
-gcloud iam service-accounts create SERVICE_ACCOUNT_NAME \
-  --display-name="Display name"
-```
-
-Example: 
-
-```shell
-gcloud iam service-accounts create garden-tasks-api-sa \
-  --display-name="Garden Tasks API Cloud Run Service"
-```
-
-#### Grant service account permissions to read secrets
-
-```shell
-# Command
-gcloud projects add-iam-policy-binding <PROJECT_ID> \
-  --member="serviceAccount:<SERVICE_ACCOUNT_NAME>@<PROJECT_ID>.iam.gserviceaccount.com" \
-  --role="roles/secretmanager.secretAccessor"
- ```
-
-Example: 
-
-```shell 
-gcloud projects add-iam-policy-binding garden-tasks-api \
-  --member="serviceAccount:garden-tasks-api-sa@garden-tasks-api.iam.gserviceaccount.com" \
-  --role="roles/secretmanager.secretAccessor"
-```
-
-#### Authenticate Docker with Artifact Registry
-
-```shell
-gcloud auth configure-docker <REGION>-docker.pkg.dev
-```
-
-Example:
-
-```shell
-gcloud auth configure-docker europe-west3-docker.pkg.dev
-```
-
-#### Create the Artifact Registry repository
-
-```shell
-gcloud artifacts repositories create <REPOSITORY_NAME> \
---project=<PROJECT_ID> \
---repository-format=docker \
---location=<REGION> \
---description="Docker repository for <DESCRIPTION>"
-```
-
-Example:
-
-```shell
-gcloud artifacts repositories create garden-tasks-api-repo \
-  --project=garden-tasks-api \
-  --repository-format=docker \
-  --location=europe-west3 \
-  --description="Docker repository for Garden Tasks API"
-```
-
-### Ib. GCP Infrastructure Setup - Google OAuth2 Service Account Authentication
-
-1. Create service account
-
-```shell
-gcloud iam service-accounts create garden-sheet-reader \
-  --display-name="Garden Sheets Reader"
-```
-
-Get the email:
-
-```shell
-gcloud iam service-accounts list --filter="email:garden-sheet-reader"
-```
-
-
-2. Create JSON key
-
-```shell
-gcloud iam service-accounts keys create ./service-account-key.json \
-  --iam-account=garden-sheet-reader@garden-tasks-api.iam.gserviceaccount.com 
-```
-
-3. Save the key to Secret Manager
-
-4. Share the spreadsheet with this service account
-
-
-### II. Environment configuration
-
-In production, configuration is provided via environment variables and Google Cloud Secret Manager.
-
-You can bootstrap secrets from your local `.env` using the provided script:
-
-```bash
-bash scripts/bootstrap-secrets.sh GOOGLE_SERVICE_ACCOUNT_JSON
-```
-
-### III. GitHub Actions authentication with Google Cloud
-
-#### **1. Make sure the required APIs are enabled**
-
-
-Workload Identity Federation relies on IAM and Security Token Service components:
-
-```shell
-gcloud services enable \
-  iamcredentials.googleapis.com \
-  sts.googleapis.com \
-  iam.googleapis.com
-```
-
-#### **2. Set a few shell variables**
-
-
-```shell
-export PROJECT_ID="your-gcp-project-id" # Update this
-export PROJECT_NUMBER="$(gcloud projects describe "$PROJECT_ID" --format='value(projectNumber)')"
-
-export GITHUB_ORG="your-github-username-or-org" # Update this
-export REPO_NAME="your-repo-name" # Update this
-
-# This is simply the **name of the Workload Identity Pool** you are about to create in GCP. Can copy as is. 
-export POOL_ID="github-pool"
-export PROVIDER_ID="github-provider" # Can copy as is 
-export SERVICE_ACCOUNT_ID="github-deployer" # Copy as is, see the note below
-```
-
-#### **3. Create the service account**
-
-```shell
-gcloud iam service-accounts create "$SERVICE_ACCOUNT_ID" \
-  --project="$PROJECT_ID" \
-  --display-name="GitHub deployer"
-```
-
-Its email will be:
-
-```shell
-export SERVICE_ACCOUNT_EMAIL="${SERVICE_ACCOUNT_ID}@${PROJECT_ID}.iam.gserviceaccount.com"
-echo "$SERVICE_ACCOUNT_EMAIL"
-```
-
-This email is what you will save in GitHub as `GCP_SERVICE_ACCOUNT`. 
-
-#### **4. Grant that service account the roles it needs**
-
-```shell
-gcloud projects add-iam-policy-binding "$PROJECT_ID" \
-  --member="serviceAccount:${SERVICE_ACCOUNT_EMAIL}" \
-  --role="roles/run.admin"
-
-gcloud projects add-iam-policy-binding "$PROJECT_ID" \
-  --member="serviceAccount:${SERVICE_ACCOUNT_EMAIL}" \
-  --role="roles/artifactregistry.writer"
-```
-
-```shell
-gcloud projects add-iam-policy-binding "$PROJECT_ID" \
-  --member="serviceAccount:${SERVICE_ACCOUNT_EMAIL}" \
-  --role="roles/iam.serviceAccountUser"
-```
-
-#### **5. Create the Workload Identity Pool**
-
-```bash
-gcloud iam workload-identity-pools create "$POOL_ID" \
-  --project="$PROJECT_ID" \
-  --location="global" \
-  --display-name="GitHub Actions Pool"
-```
-
-This pool is the container for identities coming from GitHub Actions. 
-
-
-#### **6. Create the GitHub OIDC provider inside that pool**
- 
-```shell
-gcloud iam workload-identity-pools providers create-oidc "$PROVIDER_ID" \
-  --project="$PROJECT_ID" \
-  --location="global" \
-  --workload-identity-pool="$POOL_ID" \
-  --display-name="GitHub Provider" \
-  --issuer-uri="https://token.actions.githubusercontent.com" \
-  --attribute-mapping="google.subject=assertion.sub,attribute.actor=assertion.actor,attribute.repository=assertion.repository,attribute.repository_owner=assertion.repository_owner,attribute.ref=assertion.ref" \
-  --attribute-condition="assertion.repository=='${GITHUB_ORG}/${REPO_NAME}' && assertion.ref=='refs/heads/main'"
-```
-
-- This means only tokens from that exact repository **and** the main branch will satisfy the provider condition.
-  
-
-#### **7. Allow identities from that repo to impersonate the service account**
-
-This grants principals from that Workload Identity Pool, limited to your repository, the ability to act as the service account. For the service-account-based setup, `roles/iam.workloadIdentityUser` is required. 
-
-```shell
-gcloud iam service-accounts add-iam-policy-binding "$SERVICE_ACCOUNT_EMAIL" \
-  --project="$PROJECT_ID" \
-  --role="roles/iam.workloadIdentityUser" \
-  --member="principalSet://iam.googleapis.com/projects/${PROJECT_NUMBER}/locations/global/workloadIdentityPools/${POOL_ID}/attribute.repository/${GITHUB_ORG}/${REPO_NAME}"
-```
-
-#### **8. Get the exact provider resource name**
-
-```shell
-gcloud iam workload-identity-pools providers describe "$PROVIDER_ID" \
-  --project="$PROJECT_ID" \
-  --location="global" \
-  --workload-identity-pool="$POOL_ID" \
-  --format="value(name)"
-```
-
-It will output something like:
-
-```
-projects/123456789/locations/global/workloadIdentityPools/github-pool/providers/github-provider
-```
-
-That exact string is your:
-
-```
-GCP_WORKLOAD_IDENTITY_PROVIDER
-```
-
-This is the value your GitHub workflow uses. 
-
-  
-#### **9. Add the two GitHub secrets**
-
-In GitHub, go to:
-**Repository → Settings → Secrets and variables → Actions**
-
-Create:
-
-- `GCP_WORKLOAD_IDENTITY_PROVIDER` = the full provider resource name from step 8
-- `GCP_SERVICE_ACCOUNT` = the service account email from step 3
-
-Those are the exact two values used by the auth action. 
-
-___
-
-
-## Deployment
-
-### First deployment (manual)
-
-#### 1. Build the image locally - M1/M2 Mac
-
-```shell
-docker buildx build --platform linux/amd64 -t <LOCAL_IMAGE_NAME> <BUILD_CONTEXT>
-```
-
-Example
-
-```shell
-docker buildx build --platform linux/amd64 -t garden-tasks-api .
-```
-
-#### 2. Tag the Image for Artifact Registry
-
-```shell
-docker tag <LOCAL_IMAGE_NAME> <REGION>-docker.pkg.dev/<PROJECT_ID>/<REPOSITORY_NAME>/<REMOTE_IMAGE_NAME>
-```
-Example:
-
-```shell
-docker tag garden-tasks-api europe-west3-docker.pkg.dev/garden-tasks-api/garden-tasks-api-repo/garden-tasks-api
-```
-
-#### 3. Push to Artifact Registry
-
-```shell
-docker push <REGION>-docker.pkg.dev/<PROJECT_ID>/<REPOSITORY_NAME>/pdf-processing-service
-```
-
-Example
-
-```shell
-docker push europe-west3-docker.pkg.dev/garden-tasks-api/garden-tasks-api-repo/garden-tasks-api
-```
-
-#### 4. Deploy to Cloud Run
-
-**First deployment**
-
-```shell
-gcloud run deploy garden-tasks-api \
-  --image europe-west3-docker.pkg.dev/YOUR_PROJECT_ID/garden-tasks-api-repo/garden-tasks-api \
-  --region europe-west3 \
-  --service-account=garden-tasks-api-sa@YOUR_PROJECT_ID.iam.gserviceaccount.com \
-  --concurrency=1 \
-  --max-instances=1 \
-  --allow-unauthenticated \
-  --set-env-vars "KEY=VALUE" \
-  --update-secrets "SECRET_ENV_VAR=SECRET_NAME:latest"
-```
-
-Example
-
-```shell
-gcloud run deploy garden-tasks-api \
-  --image europe-west3-docker.pkg.dev/garden-tasks-api/garden-tasks-api-repo/garden-tasks-api \
-  --region europe-west3 \
-  --service-account=garden-tasks-api-sa@garden-tasks-api.iam.gserviceaccount.com \
-  --concurrency=1 \
-  --max-instances=1 \
-  --allow-unauthenticated \
-   --set-env-vars "GARDEN_SHEET_ID=1mL8fGL-NH3Ee3A7HnteAQ6JOl1xE7Mk5lCUFceVCQJg,GARDEN_SHEET_RANGE=Yearly tasks" \
-  --update-secrets "GOOGLE_SERVICE_ACCOUNT_JSON=GOOGLE_SERVICE_ACCOUNT_JSON:latest"
-```
-
-### Subsequent deployments
-
-This service is deployed to Cloud Run via GitHub Actions on pushes to main.
-
-The workflow: 
-1. Authenticates to Google Cloud using GitHub OIDC 
-2. Builds the Docker image for linux/amd64 
-3. Pushes the image to Artifact Registry 
-4. Deploys the image to Cloud Run
-
-See: `.github/workflows/deploy.yml`

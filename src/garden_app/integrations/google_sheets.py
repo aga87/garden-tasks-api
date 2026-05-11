@@ -1,7 +1,6 @@
-import json
 from typing import Any
 
-from google.oauth2.service_account import Credentials
+import google.auth
 from googleapiclient.discovery import build  # type: ignore[import-untyped]
 
 from garden_app.config.env import ENV
@@ -13,14 +12,7 @@ def fetch_sheet_values() -> list[list[str]]:
     sheet_id = ENV.config.sheet_id
     sheet_range = ENV.config.sheet_range
 
-    service_account_info = json.loads(ENV.secrets.google_service_account_json)
-    if not isinstance(service_account_info, dict):
-        raise ValueError("Invalid service account JSON format: expected a JSON object")
-
-    credentials = Credentials.from_service_account_info(  # type: ignore[no-untyped-call]
-        service_account_info,
-        scopes=SCOPES,
-    )
+    credentials, _ = google.auth.default(scopes=SCOPES)
 
     service = build("sheets", "v4", credentials=credentials)
 
