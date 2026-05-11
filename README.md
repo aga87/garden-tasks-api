@@ -148,79 +148,9 @@ In production, configuration is provided via environment variables:
 - `GARDEN_SHEET_RANGE`
 
 
-___
-
-
 ## Deployment
 
-### First deployment (manual)
-
-#### 1. Build the image locally - M1/M2 Mac
-
-```shell
-docker buildx build --platform linux/amd64 -t <LOCAL_IMAGE_NAME> <BUILD_CONTEXT>
-```
-
-Example
-
-```shell
-docker buildx build --platform linux/amd64 -t garden-tasks-api .
-```
-
-#### 2. Tag the Image for Artifact Registry
-
-```shell
-docker tag <LOCAL_IMAGE_NAME> <REGION>-docker.pkg.dev/<PROJECT_ID>/<REPOSITORY_NAME>/<REMOTE_IMAGE_NAME>
-```
-Example:
-
-```shell
-docker tag garden-tasks-api europe-west3-docker.pkg.dev/garden-tasks-api/garden-tasks-api-repo/garden-tasks-api
-```
-
-#### 3. Push to Artifact Registry
-
-```shell
-docker push <REGION>-docker.pkg.dev/<PROJECT_ID>/<REPOSITORY_NAME>/pdf-processing-service
-```
-
-Example
-
-```shell
-docker push europe-west3-docker.pkg.dev/garden-tasks-api/garden-tasks-api-repo/garden-tasks-api
-```
-
-#### 4. Deploy to Cloud Run
-
-**First deployment**
-
-```shell
-gcloud run deploy garden-tasks-api \
-  --image europe-west3-docker.pkg.dev/YOUR_PROJECT_ID/garden-tasks-api-repo/garden-tasks-api \
-  --region europe-west3 \
-  --service-account=garden-tasks-api-sa@YOUR_PROJECT_ID.iam.gserviceaccount.com \
-  --concurrency=1 \
-  --max-instances=1 \
-  --allow-unauthenticated \
-  --set-env-vars "KEY=VALUE"
-```
-
-Example
-
-```shell
-gcloud run deploy garden-tasks-api \
-  --image europe-west3-docker.pkg.dev/garden-tasks-api/garden-tasks-api-repo/garden-tasks-api \
-  --region europe-west3 \
-  --service-account=garden-tasks-api-sa@garden-tasks-api.iam.gserviceaccount.com \
-  --concurrency=1 \
-  --max-instances=1 \
-  --allow-unauthenticated \
-   --set-env-vars "GARDEN_SHEET_ID=1mL8fGL-NH3Ee3A7HnteAQ6JOl1xE7Mk5lCUFceVCQJg,GARDEN_SHEET_RANGE=Yearly tasks"
-```
-
-### Subsequent deployments
-
-This service is deployed to Cloud Run via GitHub Actions on pushes to main.
+This service is deployed to Cloud Run via GitHub Actions on pushes to `main`.
 
 The workflow: 
 1. Authenticates to Google Cloud using GitHub OIDC 
