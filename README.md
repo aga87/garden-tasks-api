@@ -9,7 +9,6 @@
 - Provides a structured API layer consumed by a Next.js frontend
 - Designed with a focus on simplicity, low operational overhead, and fast iteration, avoiding premature optimisation
 
-
 ## Tech Stack
 
 - Python
@@ -79,7 +78,6 @@ make apply-prod
 make destroy-prod
 ```
 
-
 ## One-off Infrastructure Setup (GCP)
 
 ### 1. GitHub Actions Authentication (OIDC) with Google Cloud
@@ -104,7 +102,6 @@ Create:
 
 - `GCP_WORKLOAD_IDENTITY_PROVIDER` = `github_workload_identity_provider`
 - `GCP_SERVICE_ACCOUNT` = `github_deployer_service_account_email`
-
 
 ### 2. Authenticate Docker with Artifact Registry
 
@@ -151,7 +148,6 @@ gcloud auth application-default login \
 
 This lets local development use the same service account as Cloud Run. Your Google user must be allowed to impersonate the service account.
 
-
 ### 4. Environment configuration
 
 In production, configuration is provided via environment variables:
@@ -159,19 +155,18 @@ In production, configuration is provided via environment variables:
 - `GARDEN_SHEET_ID`
 - `GARDEN_SHEET_RANGE`
 
-
 ## Deployment
 
 This service is deployed to Cloud Run via GitHub Actions on pushes to `main`.
 
-The workflow: 
-1. Authenticates to Google Cloud using GitHub OIDC 
-2. Builds the Docker image for linux/amd64 
-3. Pushes the image to Artifact Registry 
+The workflow:
+
+1. Authenticates to Google Cloud using GitHub OIDC
+2. Builds the Docker image for linux/amd64
+3. Pushes the image to Artifact Registry
 4. Deploys the image to Cloud Run
 
 See: `.github/workflows/deploy.yml`
-
 
 ## Local Development Setup
 
@@ -192,6 +187,7 @@ uvicorn garden_app.main:app --reload
 ```
 
 Open:
+
 - http://127.0.0.1:8000 (service info)
 - http://127.0.0.1:8000/docs (interactive API docs)
 
