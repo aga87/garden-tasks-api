@@ -35,13 +35,25 @@ Infrastructure is provisioned using Terraform.
 ```bash
 # macOS
 brew install tflint
+
+# Windows (install Chocolatey first)
+choco install tflint
 ```
 
 3. Install TFSec
 
 ```bash
 # macOS
-brew install tfsec
+brew install 
+
+# Windows
+choco install tfsec
+```
+
+4. (Windows-only) Install make
+
+```powershell
+choco install make
 ```
 
 ### Configuration
