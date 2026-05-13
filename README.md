@@ -175,14 +175,19 @@ See: `.github/workflows/deploy.yml`
 
 ## Local Development Setup
 
-### Environment variables
+For local development, copy and rename `.env.example` to `.env` and provide values:
 
-For local development, copy `.env.example` and provide values.
+- GARDEN_SHEET_ID - from sheet URL (see details in the [mini-guide](https://knowsheets.com/how-to-get-the-id-of-a-google-sheet/))
+- GARDEN_SHEET_RANGE - top-left to bottom-right cell of the tasks table (e.g., A1:C3) [developers.google](https://developers.google.com/workspace/sheets/api/guides/concepts#a1-notation)
 
-### Run locally
+### Python
 
-```bash
-pip install --group dev -e .
+1. Install [uv](https://github.com/astral-sh/uv?tab=readme-ov-file#installation) as recommended on the home page. It improves build and development environment setup speed.
+2. Clone repo to local machine, then from local repo's root execute in a shell `uv sync`, then on Windows `.venv/Scripts/activate` or UNIX `source .venv/bin/activate`
+
+Now run the app with:
+
+```shell
 uvicorn garden_app.main:app --reload
 ```
 
@@ -190,7 +195,7 @@ Open:
 - http://127.0.0.1:8000 (service info)
 - http://127.0.0.1:8000/docs (interactive API docs)
 
-**Build and run with Docker**
+## Docker
 
 ```shell
 docker build -t creative-garden-api .
