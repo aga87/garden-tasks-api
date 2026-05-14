@@ -43,7 +43,7 @@ choco install tflint
 
 ```bash
 # macOS
-brew install 
+brew install tfsec
 
 # Windows
 choco install tfsec
