@@ -1,7 +1,7 @@
 from zoneinfo import ZoneInfo
 
 from garden_app.domain.time import get_current_month, get_next_month
-from garden_app.domain.types import Location, Status
+from garden_app.domain.types import Category, Location, Status
 from garden_app.models.task import Task
 
 APP_TIMEZONE = ZoneInfo("Europe/Amsterdam")
@@ -9,7 +9,23 @@ APP_TIMEZONE = ZoneInfo("Europe/Amsterdam")
 current = get_current_month()
 
 
-INDOOR_TASK_TYPES = {"organization", "sowing at home"}
+INDOOR_TASK_TYPES = {"organization", "sowing at home", "promotion"}
+
+TASK_TYPE_CATEGORIES = {
+    "bed preparation": Category.cultivation,
+    "sowing at home": Category.cultivation,
+    "sowing outdoor in soil": Category.cultivation,
+    "sowing on seedling table": Category.cultivation,
+    "planting": Category.cultivation,
+    "harvesting": Category.cultivation,
+    "pruning": Category.cultivation,
+    "maintenance": Category.maintenance,
+    "sawing": Category.maintenance,
+    "construction": Category.maintenance,
+    "investigation": Category.maintenance,
+    "organization": Category.admin,
+    "promotion": Category.admin,
+}
 
 
 def filter_tasks_by_location(
@@ -34,6 +50,24 @@ def filter_tasks_by_location(
             return not is_indoor
 
         return True
+
+    return [task for task in tasks if matches(task)]
+
+
+def filter_tasks_by_category(
+    tasks: list[Task],
+    category: Category | None,
+) -> list[Task]:
+    if category is None:
+        return tasks
+
+    def matches(task: Task) -> bool:
+        if task.task_type is None:
+            return False
+
+        task_type = task.task_type.strip().lower()
+
+        return TASK_TYPE_CATEGORIES.get(task_type) == category
 
     return [task for task in tasks if matches(task)]
 
