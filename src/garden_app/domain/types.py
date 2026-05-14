@@ -20,5 +20,5 @@ class Status(str, Enum):
 
 
 class Location(str, Enum):
-    garden = "garden"
-    home = "home"
+    outdoor = "outdoor"
+    indoor = "indoor"
