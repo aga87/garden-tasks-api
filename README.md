@@ -178,13 +178,9 @@ For local development, copy and rename `.env.example` to `.env` and provide valu
 ### Python
 
 1. Install [uv](https://github.com/astral-sh/uv?tab=readme-ov-file#installation) as recommended on the home page. It improves build and development environment setup speed.
-2. Clone repo to local machine, then from local repo's root execute in a shell `uv sync`, then on Windows `.venv/Scripts/activate` or UNIX `source .venv/bin/activate`
+2. Clone repo to local machine, then from local repo's root execute in a shell `uv sync` to create the Python virtual environment.
 
-Now run the app with:
-
-```shell
-uvicorn garden_app.main:app --reload
-```
+Now run the app with `uv run uvicorn garden_app.main:app --reload` or `make run`.
 
 Open:
 
