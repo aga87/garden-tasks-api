@@ -16,4 +16,4 @@ test:
 check: format lint typecheck test
 
 run:
-	uvicorn garden_app.main:app --reload
+	uv run uvicorn garden_app.main:app --reload

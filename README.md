@@ -9,7 +9,6 @@
 - Provides a structured API layer consumed by a Next.js frontend
 - Designed with a focus on simplicity, low operational overhead, and fast iteration, avoiding premature optimisation
 
-
 ## Tech Stack
 
 - Python
@@ -35,6 +34,9 @@ Infrastructure is provisioned using Terraform.
 ```bash
 # macOS
 brew install tflint
+
+# Windows (install Chocolatey first)
+choco install tflint
 ```
 
 3. Install TFSec
@@ -42,6 +44,15 @@ brew install tflint
 ```bash
 # macOS
 brew install tfsec
+
+# Windows
+choco install tfsec
+```
+
+4. (Windows-only) Install make
+
+```powershell
+choco install make
 ```
 
 ### Configuration
@@ -67,7 +78,6 @@ make apply-prod
 make destroy-prod
 ```
 
-
 ## One-off Infrastructure Setup (GCP)
 
 ### 1. GitHub Actions Authentication (OIDC) with Google Cloud
@@ -92,7 +102,6 @@ Create:
 
 - `GCP_WORKLOAD_IDENTITY_PROVIDER` = `github_workload_identity_provider`
 - `GCP_SERVICE_ACCOUNT` = `github_deployer_service_account_email`
-
 
 ### 2. Authenticate Docker with Artifact Registry
 
@@ -139,7 +148,6 @@ gcloud auth application-default login \
 
 This lets local development use the same service account as Cloud Run. Your Google user must be allowed to impersonate the service account.
 
-
 ### 4. Environment configuration
 
 In production, configuration is provided via environment variables:
@@ -147,38 +155,39 @@ In production, configuration is provided via environment variables:
 - `GARDEN_SHEET_ID`
 - `GARDEN_SHEET_RANGE`
 
-
 ## Deployment
 
 This service is deployed to Cloud Run via GitHub Actions on pushes to `main`.
 
-The workflow: 
-1. Authenticates to Google Cloud using GitHub OIDC 
-2. Builds the Docker image for linux/amd64 
-3. Pushes the image to Artifact Registry 
+The workflow:
+
+1. Authenticates to Google Cloud using GitHub OIDC
+2. Builds the Docker image for linux/amd64
+3. Pushes the image to Artifact Registry
 4. Deploys the image to Cloud Run
 
 See: `.github/workflows/deploy.yml`
 
-
 ## Local Development Setup
 
-### Environment variables
+For local development, copy and rename `.env.example` to `.env` and provide values:
 
-For local development, copy `.env.example` and provide values.
+- GARDEN_SHEET_ID - from sheet URL (see details in the [mini-guide](https://knowsheets.com/how-to-get-the-id-of-a-google-sheet/))
+- GARDEN_SHEET_RANGE - top-left to bottom-right cell of the tasks table (e.g., A1:C3) [developers.google](https://developers.google.com/workspace/sheets/api/guides/concepts#a1-notation)
 
-### Run locally
+### Python
 
-```bash
-pip install --group dev -e .
-uvicorn garden_app.main:app --reload
-```
+1. Install [uv](https://github.com/astral-sh/uv?tab=readme-ov-file#installation) as recommended on the home page. It improves build and development environment setup speed.
+2. Clone repo to local machine, then from local repo's root execute in a shell `uv sync` to create the Python virtual environment.
+
+Now run the app with `uv run uvicorn garden_app.main:app --reload` or `make run`.
 
 Open:
+
 - http://127.0.0.1:8000 (service info)
 - http://127.0.0.1:8000/docs (interactive API docs)
 
-**Build and run with Docker**
+## Docker
 
 ```shell
 docker build -t creative-garden-api .
