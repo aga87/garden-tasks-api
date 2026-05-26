@@ -22,6 +22,73 @@
 
 The project currently uses a single production environment to keep infrastructure simple and cost-effective. Changes are validated locally and through CI before deployment. A separate staging environment would be the next step if the project gains more users, higher risk, or more frequent releases.
 
+
+## Local Development
+
+### Prerequisites
+
+Install:
+1. Python
+2. [Install uv](https://github.com/astral-sh/uv?tab=readme-ov-file#installation). It improves build and development environment setup speed
+3. Docker (optional, for container-based development)
+4. [Install Google Cloud CLI](https://docs.cloud.google.com/sdk/docs/install-sdk) - (`gcloud`) (required for local authentication)
+
+### Local Development Setup
+
+1. Copy `.env.example` to `.env` and provide values:
+
+- `GARDEN_SHEET_ID` — Google Sheet ID from the spreadsheet URL
+- `GARDEN_SHEET_RANGE` - Spreadsheet range in [A1 notation](https://developers.google.com/workspace/sheets/api/guides/concepts#a1-notation) covering the task table (e.g. `A1:C3`) 
+
+
+3. Authenticate locally:
+
+```bash
+gcloud auth application-default login
+```
+
+4. Install dependencies and create the virtual environment:
+
+```bash
+uv sync
+```
+
+### Running the application
+
+Run the app with 
+
+```bash
+uv run uvicorn garden_app.main:app --reload
+``` 
+
+or 
+
+```bash
+make run
+```
+
+Open:
+
+- http://127.0.0.1:8000 (service info)
+- http://127.0.0.1:8000/docs (interactive API docs)
+
+### Running tests
+
+```shell
+pytest
+```
+
+Common development tasks are available via the Makefile.
+
+
+## Docker
+
+```shell
+docker build -t creative-garden-api .
+docker run --env-file .env -p 8080:8080 garden-tasks-api
+```
+
+
 ## Infrastructure (Terraform)
 
 Infrastructure is provisioned using Terraform.
@@ -148,37 +215,3 @@ The workflow:
 4. Deploys the image to Cloud Run
 
 See: `.github/workflows/deploy.yml`
-
-## Local Development Setup
-
-For local development, copy and rename `.env.example` to `.env` and provide values:
-
-- GARDEN_SHEET_ID - from sheet URL (see details in the [mini-guide](https://knowsheets.com/how-to-get-the-id-of-a-google-sheet/))
-- GARDEN_SHEET_RANGE - top-left to bottom-right cell of the tasks table (e.g., A1:C3) [developers.google](https://developers.google.com/workspace/sheets/api/guides/concepts#a1-notation)
-
-### Python
-
-1. Install [uv](https://github.com/astral-sh/uv?tab=readme-ov-file#installation) as recommended on the home page. It improves build and development environment setup speed.
-2. Clone repo to local machine, then from local repo's root execute in a shell `uv sync` to create the Python virtual environment.
-
-Now run the app with `uv run uvicorn garden_app.main:app --reload` or `make run`.
-
-Open:
-
-- http://127.0.0.1:8000 (service info)
-- http://127.0.0.1:8000/docs (interactive API docs)
-
-## Docker
-
-```shell
-docker build -t creative-garden-api .
-docker run --env-file .env -p 8080:8080 garden-tasks-api
-```
-
-### Running tests
-
-```shell
-pytest
-```
-
-Common development tasks are available via the Makefile.
