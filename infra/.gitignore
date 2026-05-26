@@ -4,7 +4,3 @@
 *.tfstate
 *.tfstate.*
 .terraform/
-
-# Terraform variables (may contain secrets)
-*.tfvars
-*.tfvars.json
