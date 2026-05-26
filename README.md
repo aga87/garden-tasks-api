@@ -28,7 +28,7 @@ The project currently uses a single production environment to keep infrastructur
 ### Prerequisites
 
 Install:
-1. Python
+1. Python. Python version requirements are defined in `pyproject.toml` (and `.python-version` if present). `uv` will automatically use or install a compatible version.
 2. [Install uv](https://github.com/astral-sh/uv?tab=readme-ov-file#installation). It improves build and development environment setup speed
 3. Docker (optional, for container-based development)
 4. [Install Google Cloud CLI](https://docs.cloud.google.com/sdk/docs/install-sdk) - (`gcloud`) (required for local authentication)
