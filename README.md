@@ -22,46 +22,92 @@
 
 The project currently uses a single production environment to keep infrastructure simple and cost-effective. Changes are validated locally and through CI before deployment. A separate staging environment would be the next step if the project gains more users, higher risk, or more frequent releases.
 
+
+## Local Development
+
+### Prerequisites
+
+Install:
+1. Python. Python version requirements are defined in `pyproject.toml` (and `.python-version` if present). `uv` will automatically use or install a compatible version.
+2. [Install uv](https://github.com/astral-sh/uv?tab=readme-ov-file#installation). It improves build and development environment setup speed.
+3. Docker - optional, for container-based development.
+4. [Install Google Cloud CLI](https://docs.cloud.google.com/sdk/docs/install-sdk) - (`gcloud`) - required for local authentication.
+
+### Local Development Setup
+
+1. Copy `.env.example` to `.env` and provide values:
+
+- `GARDEN_SHEET_ID` — Google Sheet ID from the spreadsheet URL
+- `GARDEN_SHEET_RANGE` - Spreadsheet range in [A1 notation](https://developers.google.com/workspace/sheets/api/guides/concepts#a1-notation) covering the task table (e.g. `A1:C3`) 
+
+
+3. Authenticate locally:
+
+```bash
+gcloud auth application-default login
+```
+
+4. Install dependencies and create the virtual environment:
+
+```bash
+uv sync
+```
+
+### Running the application
+
+Run the app with 
+
+```bash
+uv run uvicorn garden_app.main:app --reload
+``` 
+
+or 
+
+```bash
+make run
+```
+
+Open:
+
+- http://127.0.0.1:8000 (service info)
+- http://127.0.0.1:8000/docs (interactive API docs)
+
+### Running tests
+
+```shell
+pytest
+```
+
+Common development tasks are available via the Makefile.
+
+
+## Docker
+
+```shell
+docker build -t creative-garden-api .
+docker run --env-file .env -p 8080:8080 garden-tasks-api
+```
+
+
 ## Infrastructure (Terraform)
 
 Infrastructure is provisioned using Terraform.
 
 ### Prerequisites
 
-1. Install [Terraform](https://developer.hashicorp.com/terraform/install)
-2. Install TFLint
+1. [Install Terraform](https://developer.hashicorp.com/terraform/install)
 
-```bash
-# macOS
-brew install tflint
+2. [Install TFLint](https://github.com/terraform-linters/tflint?utm_source=chatgpt.com)
 
-# Windows (install Chocolatey first)
-choco install tflint
-```
+3. [Install TFSec](https://aquasecurity.github.io/tfsec/v0.63.1/getting-started/installation/)
 
-3. Install TFSec
-
-```bash
-# macOS
-brew install tfsec
-
-# Windows
-choco install tfsec
-```
-
-4. (Windows-only) Install make
-
-```powershell
-choco install make
-```
 
 ### Configuration
 
-Create environment variable files for each Terraform environment:
+Terraform environment configuration lives in:
 
-```bash
-# cp infra/staging.tfvars.example infra/staging.tfvars
-cp infra/prod.tfvars.example infra/prod.tfvars
+```text
+infra/prod.tfvars
 ```
 
 ### Workflow
@@ -73,10 +119,12 @@ cd infra
 
 terraform init # one-off
 
-make plan-prod
-make apply-prod
-make destroy-prod
+make plan
+make apply
+make destroy
 ```
+
+Commands currently default to the production environment, configured through the `ENV ?= prod` setting in the Makefile. If a staging environment is added in the future, the default should be changed to `staging`.
 
 ## One-off Infrastructure Setup (GCP)
 
@@ -167,37 +215,3 @@ The workflow:
 4. Deploys the image to Cloud Run
 
 See: `.github/workflows/deploy.yml`
-
-## Local Development Setup
-
-For local development, copy and rename `.env.example` to `.env` and provide values:
-
-- GARDEN_SHEET_ID - from sheet URL (see details in the [mini-guide](https://knowsheets.com/how-to-get-the-id-of-a-google-sheet/))
-- GARDEN_SHEET_RANGE - top-left to bottom-right cell of the tasks table (e.g., A1:C3) [developers.google](https://developers.google.com/workspace/sheets/api/guides/concepts#a1-notation)
-
-### Python
-
-1. Install [uv](https://github.com/astral-sh/uv?tab=readme-ov-file#installation) as recommended on the home page. It improves build and development environment setup speed.
-2. Clone repo to local machine, then from local repo's root execute in a shell `uv sync` to create the Python virtual environment.
-
-Now run the app with `uv run uvicorn garden_app.main:app --reload` or `make run`.
-
-Open:
-
-- http://127.0.0.1:8000 (service info)
-- http://127.0.0.1:8000/docs (interactive API docs)
-
-## Docker
-
-```shell
-docker build -t creative-garden-api .
-docker run --env-file .env -p 8080:8080 garden-tasks-api
-```
-
-### Running tests
-
-```shell
-pytest
-```
-
-Common development tasks are available via the Makefile.
