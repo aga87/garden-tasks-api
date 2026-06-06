@@ -4,15 +4,16 @@
 import io
 import json
 from pathlib import Path
+from typing import Any, cast
 
 import google.auth
-from googleapiclient.discovery import build
-from googleapiclient.http import MediaIoBaseDownload
+from googleapiclient.discovery import Resource, build  # type: ignore[import-untyped]
+from googleapiclient.http import MediaIoBaseDownload  # type: ignore[import-untyped]
 
 SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]
 
 
-def authenticate_google_drive():
+def authenticate_google_drive() -> Resource:
     """Authenticate into Google Drive.
 
     :return: object for interacting with Google Drive
@@ -23,7 +24,9 @@ def authenticate_google_drive():
     return service
 
 
-def fetch_entries(service, extension="json") -> list[dict[str, str]] | None:
+def fetch_entries(
+        service: Resource, extension: str = "json"
+    ) -> list[dict[str, str]] | None:
     """Fetch metadata of files with specific extension from Google Drive using its API.
 
     Can read all the files that are available to the account.
@@ -36,11 +39,11 @@ def fetch_entries(service, extension="json") -> list[dict[str, str]] | None:
         .execute()
     )
 
-    entries = results.get("files", [])
+    entries = cast(list[dict[str, str]], results.get("files", []))
 
     if not entries:
         print("No files found.")
-        return
+        return None
 
     # List available Google Drive files.
     # print("Files:")
@@ -50,7 +53,9 @@ def fetch_entries(service, extension="json") -> list[dict[str, str]] | None:
     return entries
 
 
-def get_json_contents(service, entries):
+def get_json_contents(
+        service: Resource, entries: list[dict[str, str]] | None
+    ) -> dict[str, Any] | None:
     """Get contents of JSON files stored on Google Drive.
 
     Works also for GeoJSONs.
@@ -58,6 +63,9 @@ def get_json_contents(service, entries):
     :return: dictionary of json_name: json
     """
     jsons = {}
+
+    if entries is None:
+        return None
 
     for entry in entries:
         request = service.files().get_media(fileId=entry["id"])
