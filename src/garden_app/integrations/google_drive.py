@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Interact with Google Drive files through Google Drive API."""
-from pathlib import Path
 import io
 import json
+from pathlib import Path
 
 import google.auth
 from googleapiclient.discovery import build

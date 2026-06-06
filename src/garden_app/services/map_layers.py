@@ -1,4 +1,6 @@
+#!/usr/bin/env python3
 import garden_app.integrations.google_drive as gdrive
+
 
 def fetch_map_geojson_layers():
     service = gdrive.authenticate_google_drive()
