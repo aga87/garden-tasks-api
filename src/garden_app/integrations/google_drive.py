@@ -25,8 +25,8 @@ def authenticate_google_drive() -> Resource:
 
 
 def fetch_entries(
-        service: Resource, extension: str = "json"
-    ) -> list[dict[str, str]] | None:
+    service: Resource, extension: str = "json"
+) -> list[dict[str, str]] | None:
     """Fetch metadata of files with specific extension from Google Drive using its API.
 
     Can read all the files that are available to the account.
@@ -54,8 +54,8 @@ def fetch_entries(
 
 
 def get_json_contents(
-        service: Resource, entries: list[dict[str, str]] | None
-    ) -> dict[str, Any] | None:
+    service: Resource, entries: list[dict[str, str]] | None
+) -> dict[str, Any] | None:
     """Get contents of JSON files stored on Google Drive.
 
     Works also for GeoJSONs.
