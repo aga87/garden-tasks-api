@@ -6,5 +6,5 @@ def fetch_map_geojson_layers():
     service = gdrive.authenticate_google_drive()
     entries = gdrive.fetch_entries(service, extension="geojson")
     geojsons = gdrive.get_json_contents(service, entries)
-    
+
     return geojsons

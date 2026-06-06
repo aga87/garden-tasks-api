@@ -19,7 +19,7 @@ app = FastAPI(
     openapi_tags=[
         {"name": "Meta", "description": "Service info and health"},
         {"name": "Tasks", "description": "Garden tasks"},
-        {"name": "Map", "description": "Garden map layers"}
+        {"name": "Map", "description": "Garden map layers"},
     ],
 )
 
@@ -44,6 +44,7 @@ def get_tasks(
 ) -> TasksResponse:
     tasks = get_visible_tasks(location)
     return TasksResponse(tasks=tasks)
+
 
 @app.get("/map", tags=["Map"])
 def map_layers():
