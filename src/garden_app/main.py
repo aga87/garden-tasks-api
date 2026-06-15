@@ -1,6 +1,7 @@
 from importlib.metadata import version
 
 from fastapi import FastAPI, Query
+from fastapi.middleware.cors import CORSMiddleware
 
 from garden_app.domain.types import Category, Location
 from garden_app.logging_config import setup_logging
@@ -19,6 +20,16 @@ app = FastAPI(
         {"name": "Meta", "description": "Service info and health"},
         {"name": "Tasks", "description": "Garden tasks"},
     ],
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+        "https://garden-tasks-git-dev-aga87s-projects.vercel.app",
+    ],
+    allow_methods=["GET"],
+    allow_headers=["*"],
 )
 
 
