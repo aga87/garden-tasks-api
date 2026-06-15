@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Interact with Google Drive files through Google Drive API."""
 
 import io
