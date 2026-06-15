@@ -57,10 +57,12 @@ def filter_tasks_by_location(
 
 def filter_tasks_by_category(
     tasks: list[Task],
-    category: Category | None,
+    categories: list[Category] | None,
 ) -> list[Task]:
-    if category is None:
+    if not categories:
         return tasks
+
+    selected_categories = set(categories)
 
     def matches(task: Task) -> bool:
         if task.task_type is None:
@@ -68,7 +70,7 @@ def filter_tasks_by_category(
 
         task_type = task.task_type.strip().lower()
 
-        return TASK_TYPE_CATEGORIES.get(task_type) == category
+        return TASK_TYPE_CATEGORIES.get(task_type) in selected_categories
 
     return [task for task in tasks if matches(task)]
 

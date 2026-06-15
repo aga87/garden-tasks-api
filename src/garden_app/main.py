@@ -51,7 +51,7 @@ def health() -> HealthResponse:
 @app.get("/tasks", response_model=TasksResponse, tags=["Tasks"])
 def get_tasks(
     location: Annotated[list[Location] | None, Query()] = None,
-    category: Annotated[Category | None, Query()] = None,
+    category: Annotated[list[Category] | None, Query()] = None,
 ) -> TasksResponse:
     tasks = get_visible_tasks(location, category)
     return TasksResponse(tasks=tasks)
