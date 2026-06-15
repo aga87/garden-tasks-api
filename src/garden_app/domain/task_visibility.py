@@ -29,10 +29,12 @@ TASK_TYPE_CATEGORIES = {
 
 def filter_tasks_by_location(
     tasks: list[Task],
-    location: Location | None,
+    locations: list[Location] | None,
 ) -> list[Task]:
-    if location is None:
+    if not locations:
         return tasks
+
+    selected_locations = set(locations)
 
     def matches(task: Task) -> bool:
         if task.task_type is None:
@@ -42,13 +44,13 @@ def filter_tasks_by_location(
 
         is_home = task_type in HOME_TASK_TYPES
 
-        if location == Location.home:
-            return is_home
+        if Location.home in selected_locations and is_home:
+            return True
 
-        if location == Location.garden:
-            return not is_home
+        if Location.garden in selected_locations and not is_home:
+            return True
 
-        return True
+        return False
 
     return [task for task in tasks if matches(task)]
 

@@ -15,23 +15,23 @@ logger = logging.getLogger(__name__)
 
 
 def get_visible_tasks(
-    location: Location | None,
+    locations: list[Location] | None,
     category: Category | None,
 ) -> list[Task]:
     tasks = load_tasks_from_sheet()
 
     visible_tasks = filter_tasks_by_status(tasks)
     visible_tasks = filter_tasks_by_visible_months(visible_tasks)
-    visible_tasks = filter_tasks_by_location(visible_tasks, location)
+    visible_tasks = filter_tasks_by_location(visible_tasks, locations)
     visible_tasks = filter_tasks_by_category(visible_tasks, category)
 
     visible_tasks = sort_tasks(visible_tasks)
 
     logger.info(
-        "Filtered %d tasks to %d visible tasks (location=%s, category=%s)",
+        "Filtered %d tasks to %d visible tasks (locations=%s, category=%s)",
         len(tasks),
         len(visible_tasks),
-        location,
+        locations,
         category,
     )
 
