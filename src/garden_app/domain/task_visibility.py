@@ -8,8 +8,7 @@ APP_TIMEZONE = ZoneInfo("Europe/Amsterdam")
 
 current = get_current_month()
 
-
-INDOOR_TASK_TYPES = {"organization", "sowing at home", "promotion"}
+HOME_TASK_TYPES = {"organization", "sowing at home", "promotion"}
 
 TASK_TYPE_CATEGORIES = {
     "bed preparation": Category.cultivation,
@@ -41,13 +40,13 @@ def filter_tasks_by_location(
 
         task_type = task.task_type.strip().lower()
 
-        is_indoor = task_type in INDOOR_TASK_TYPES
+        is_home = task_type in HOME_TASK_TYPES
 
-        if location == Location.indoor:
-            return is_indoor
+        if location == Location.home:
+            return is_home
 
-        if location == Location.outdoor:
-            return not is_indoor
+        if location == Location.garden:
+            return not is_home
 
         return True
 
