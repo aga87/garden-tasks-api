@@ -3,13 +3,22 @@
 import io
 import json
 from pathlib import Path
-from typing import Any, cast
+from typing import Any, TypedDict, cast
 
 import google.auth
 from googleapiclient.discovery import Resource, build  # type: ignore[import-untyped]
 from googleapiclient.http import MediaIoBaseDownload  # type: ignore[import-untyped]
 
 SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]
+
+
+class DriveFile(TypedDict):
+    id: str
+    name: str
+
+class NamedJSONs(TypedDict):
+    json_name: str
+    json: Any
 
 
 def authenticate_google_drive() -> Resource:
@@ -25,13 +34,8 @@ def authenticate_google_drive() -> Resource:
 
 def fetch_entries(
     service: Resource, extension: str = "json"
-) -> list[dict[str, str]] | None:
-    """Fetch metadata of files with specific extension from Google Drive using its API.
-
-    Can read all the files that are available to the account.
-
-    :return: ID and name pairs of entries (files)
-    """
+) -> list[DriveFile] | None:
+    """Fetch metadata of Google Drive files with the given extension."""
     results = (
         service.files()
         .list(fields="files(id,name)", q=f"fileExtension = '{extension}'")
@@ -48,13 +52,8 @@ def fetch_entries(
 
 def get_json_contents(
     service: Resource, entries: list[dict[str, str]] | None
-) -> dict[str, Any] | None:
-    """Get contents of JSON files stored on Google Drive.
-
-    Works also for GeoJSONs.
-
-    :return: dictionary of json_name: json
-    """
+) -> NamedJSONs | None:
+    """Get contents of JSON files stored on Google Drive."""
     jsons = {}
 
     if entries is None:
