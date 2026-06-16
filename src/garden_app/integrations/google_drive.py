@@ -34,7 +34,7 @@ def authenticate_google_drive() -> Resource:
 
 def fetch_entries(
     service: Resource, extension: str = "json"
-) -> list[DriveFile] | None:
+) -> list[DriveFile]:
     """Fetch metadata of Google Drive files with the given extension."""
     results = (
         service.files()
@@ -42,22 +42,14 @@ def fetch_entries(
         .execute()
     )
 
-    entries = cast(list[dict[str, str]], results.get("files", []))
-
-    if not entries:
-        return None
-
-    return entries
+    return cast(list[DriveFile], results.get("files", []))
 
 
 def get_json_contents(
-    service: Resource, entries: list[dict[str, str]] | None
-) -> NamedJSONs | None:
+    service: Resource, entries: list[DriveFile]
+) -> NamedJSONs:
     """Get contents of JSON files stored on Google Drive."""
     jsons = {}
-
-    if entries is None:
-        return None
 
     for entry in entries:
         request = service.files().get_media(fileId=entry["id"])
@@ -74,4 +66,4 @@ def get_json_contents(
 
         jsons[key] = json_content
 
-    return jsons
+    return cast(NamedJSONs, jsons)
