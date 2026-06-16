@@ -22,3 +22,9 @@ class Status(str, Enum):
 class Location(str, Enum):
     garden = "garden"
     home = "home"
+
+
+class Category(str, Enum):
+    cultivation = "cultivation"
+    maintenance = "maintenance"
+    admin = "admin"
