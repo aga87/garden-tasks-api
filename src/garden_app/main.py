@@ -28,6 +28,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",
         "https://garden-tasks-git-dev-aga87s-projects.vercel.app",
+        "https://garden-tasks-eight.vercel.app",
     ],
     allow_methods=["GET"],
     allow_headers=["*"],
