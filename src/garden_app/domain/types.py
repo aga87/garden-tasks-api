@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Any, TypedDict
 
 
 class Priority(str, Enum):
@@ -22,3 +23,13 @@ class Status(str, Enum):
 class Location(str, Enum):
     garden = "garden"
     home = "home"
+
+
+class DriveFile(TypedDict):
+    id: str
+    name: str
+
+
+class NamedJSONs(TypedDict):
+    json_name: str
+    json: Any

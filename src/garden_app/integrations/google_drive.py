@@ -3,23 +3,15 @@
 import io
 import json
 from pathlib import Path
-from typing import Any, TypedDict, cast
+from typing import cast
 
 import google.auth
 from googleapiclient.discovery import Resource, build  # type: ignore[import-untyped]
 from googleapiclient.http import MediaIoBaseDownload  # type: ignore[import-untyped]
 
+from garden_app.domain.types import DriveFile, NamedJSONs
+
 SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]
-
-
-class DriveFile(TypedDict):
-    id: str
-    name: str
-
-
-class NamedJSONs(TypedDict):
-    json_name: str
-    json: Any
 
 
 def authenticate_google_drive() -> Resource:
