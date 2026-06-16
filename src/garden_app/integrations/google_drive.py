@@ -16,6 +16,7 @@ class DriveFile(TypedDict):
     id: str
     name: str
 
+
 class NamedJSONs(TypedDict):
     json_name: str
     json: Any
@@ -32,9 +33,7 @@ def authenticate_google_drive() -> Resource:
     return service
 
 
-def fetch_entries(
-    service: Resource, extension: str = "json"
-) -> list[DriveFile]:
+def fetch_entries(service: Resource, extension: str = "json") -> list[DriveFile]:
     """Fetch metadata of Google Drive files with the given extension."""
     results = (
         service.files()
@@ -45,9 +44,7 @@ def fetch_entries(
     return cast(list[DriveFile], results.get("files", []))
 
 
-def get_json_contents(
-    service: Resource, entries: list[DriveFile]
-) -> NamedJSONs:
+def get_json_contents(service: Resource, entries: list[DriveFile]) -> NamedJSONs:
     """Get contents of JSON files stored on Google Drive."""
     jsons = {}
 
