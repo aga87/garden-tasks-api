@@ -41,13 +41,7 @@ def fetch_entries(
     entries = cast(list[dict[str, str]], results.get("files", []))
 
     if not entries:
-        print("No files found.")
         return None
-
-    # List available Google Drive files.
-    # print("Files:")
-    # for item in items:
-    #     print(item)
 
     return entries
 
