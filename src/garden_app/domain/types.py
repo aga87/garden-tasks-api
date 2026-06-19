@@ -33,3 +33,9 @@ class DriveFile(TypedDict):
 class NamedJSONs(TypedDict):
     json_name: str
     json: Any
+
+
+class Category(str, Enum):
+    cultivation = "cultivation"
+    maintenance = "maintenance"
+    admin = "admin"

@@ -1,8 +1,10 @@
 from importlib.metadata import version
+from typing import Annotated
 
 from fastapi import FastAPI, Query
+from fastapi.middleware.cors import CORSMiddleware
 
-from garden_app.domain.types import Location
+from garden_app.domain.types import Category, Location
 from garden_app.logging_config import setup_logging
 from garden_app.models.health_response import HealthResponse
 from garden_app.models.map_response import MapResponse
@@ -24,6 +26,17 @@ app = FastAPI(
     ],
 )
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+        "https://garden-tasks-git-dev-aga87s-projects.vercel.app",
+        "https://garden-tasks-eight.vercel.app",
+    ],
+    allow_methods=["GET"],
+    allow_headers=["*"],
+)
+
 
 @app.get("/", response_model=RootResponse, tags=["Meta"])
 def root() -> RootResponse:
@@ -41,9 +54,10 @@ def health() -> HealthResponse:
 
 @app.get("/tasks", response_model=TasksResponse, tags=["Tasks"])
 def get_tasks(
-    location: Location = Query(default=None),
+    location: Annotated[list[Location] | None, Query()] = None,
+    category: Annotated[list[Category] | None, Query()] = None,
 ) -> TasksResponse:
-    tasks = get_visible_tasks(location)
+    tasks = get_visible_tasks(location, category)
     return TasksResponse(tasks=tasks)
 
 

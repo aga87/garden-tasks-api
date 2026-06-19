@@ -1,19 +1,22 @@
 lint:
-	ruff check .
+	uv run ruff check .
 
 lint-fix:
-	ruff check . --fix
+	uv run ruff check . --fix
 
 format:
-	ruff format .
+	uv run ruff format .
+
+format-check:
+	uv run ruff format --check .
 
 typecheck:
-	mypy src
+	uv run mypy src
 
 test:
-	pytest
+	uv run pytest
 
-check: format lint typecheck test
+check: format-check lint typecheck test
 
 run:
 	uv run uvicorn garden_app.main:app --reload
