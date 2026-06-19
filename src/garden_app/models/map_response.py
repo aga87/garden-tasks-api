@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from garden_app.domain.types import NamedJSONs
+from garden_app.integrations.google_drive import NamedJSONs
 
 
 class MapResponse(BaseModel):
