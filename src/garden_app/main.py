@@ -7,8 +7,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from garden_app.domain.types import Category, Location
 from garden_app.logging_config import setup_logging
 from garden_app.models.health_response import HealthResponse
+from garden_app.models.map_response import MapResponse
 from garden_app.models.root_response import RootResponse
 from garden_app.models.task_response import TasksResponse
+from garden_app.services.map_layers import fetch_map_geojson_layers
 from garden_app.services.task_service import get_visible_tasks
 
 setup_logging()
@@ -20,6 +22,7 @@ app = FastAPI(
     openapi_tags=[
         {"name": "Meta", "description": "Service info and health"},
         {"name": "Tasks", "description": "Garden tasks"},
+        {"name": "Map", "description": "Garden map layers"},
     ],
 )
 
@@ -56,3 +59,9 @@ def get_tasks(
 ) -> TasksResponse:
     tasks = get_visible_tasks(location, category)
     return TasksResponse(tasks=tasks)
+
+
+@app.get("/map", tags=["Map"])
+def map_layers() -> MapResponse:
+    geojsons = fetch_map_geojson_layers()
+    return MapResponse(geojsons=geojsons)
