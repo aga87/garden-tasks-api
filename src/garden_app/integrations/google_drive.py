@@ -10,16 +10,12 @@ from googleapiclient.discovery import Resource, build  # type: ignore[import-unt
 from googleapiclient.http import MediaIoBaseDownload  # type: ignore[import-untyped]
 
 SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]
+NamedJSONs = dict[str, Any]
 
 
 class DriveFile(TypedDict):
     id: str
     name: str
-
-
-class NamedJSONs(TypedDict):
-    json_name: str
-    json: Any
 
 
 def authenticate_google_drive() -> Resource:
@@ -63,4 +59,4 @@ def get_json_contents(service: Resource, entries: list[DriveFile]) -> NamedJSONs
 
         jsons[key] = json_content
 
-    return cast(NamedJSONs, jsons)
+    return jsons
